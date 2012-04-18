@@ -1,0 +1,15 @@
+<html>
+<body>
+<form name="input" action="" method="post">
+{% csrf_token %}
+<select name="choices[]" multiple="multiple" size="5">
+    <option value="0">Zero</option>
+    <option value="1">One</option>
+  </select>
+Time (MM/DD/YYYY:HH:MM:SS): <input type="text" name="time" />
+Winner: <input type="text" name="winner" />
+Losers: <input type="text" name="loser" />
+<input type="submit" value="Submit" />
+</form>
+</body>
+</html>
