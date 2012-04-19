@@ -5,13 +5,13 @@ import json, sys
 
 def leaders(request):
     leaders = User.objects.all()
-    users = []
+    users = [0]*10
     board = {}
 
     for leader in leaders:
-        if loop.counter >= 10:
-            break
-        users.append(leader.name)
+        if leader.rank <= 10:
+            users[leader.rank -  1] = leader.name
+
 
     board['users'] = users
     board_json = json.dumps(board)

@@ -1,6 +1,7 @@
 from django.shortcuts import render_to_response
 from django.core.context_processors import csrf
 from leaderboard.models import Game, User
+from datetime import datetime
 import json, sys
 
 def leaders(request):
@@ -23,6 +24,7 @@ def add_game(request):
         data_dict = {}
         if request.POST['time'] and request.POST['losers'] and request.POST['winner']:
             data_dict['time'] = request.POST['time']
+            date = data_dict['time']
 
             losers =  request.POST.getlist('losers')
             loser_objs = []
@@ -71,7 +73,12 @@ def add_game(request):
                 print str(user) + " " + str(user.rank)
 
             data_dict['winner'] = winner
-        
+
+            t = datetime.strptime(date, "%m/%d/%Y:%H:%M:%S")
+            game = Game.objects.create(end_time=t,winner=winner_obj)
+            game.losers = loser_objs
+            game.save()
+            
         return render_to_response("base.json", {'data':str(data_dict)})
     else:
         c = {}
