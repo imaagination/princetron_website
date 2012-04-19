@@ -1,7 +1,7 @@
 from django.shortcuts import render_to_response
 from django.core.context_processors import csrf
 from leaderboard.models import Game, User
-import json
+import json, sys
 
 def leaders(request):
     leaders = User.objects.all()
@@ -9,6 +9,8 @@ def leaders(request):
     board = {}
 
     for leader in leaders:
+        if loop.counter >= 10:
+            break
         users.append(leader.name)
 
     board['users'] = users
@@ -25,13 +27,49 @@ def add_game(request):
             losers =  request.POST.getlist('losers')
             loser_objs = []
             data_dict['losers'] = losers
+            highest_rank = sys.maxint
 
-            for loser in losers:
-                u = User.objects.get_or_create(name=loser)
-                loser_objs.append(u)
 
             winner = request.POST['winner']
-            winner_obj = User.objects.get_or_create(name=winner)
+            winner_obj, created = User.objects.get_or_create(name=winner)
+            if created: #Created new
+                prev_rank = sys.maxint
+            else:
+                prev_rank = winner_obj.rank
+
+
+            for loser in losers:
+                user, created = User.objects.get_or_create(name=loser)
+                rank = len(User.objects.all())
+                print created
+                if created: #Created New
+                    user.rank = rank
+                    user.save()
+                else:
+                    if user.rank < highest_rank:
+                        highest_rank = user.rank
+                    
+                print user.rank
+
+
+                loser_objs.append(user)
+
+
+
+            winner_obj.rank = highest_rank
+            winner_obj.save()
+
+            # Adjust all others
+            for user in User.objects.all():
+                if user.name == winner:
+                    continue
+                if user.rank <= prev_rank and user.rank >= highest_rank:
+                    user.rank = user.rank + 1
+                    user.save()
+                
+            for user in User.objects.all():
+                print str(user) + " " + str(user.rank)
+
             data_dict['winner'] = winner
         
         return render_to_response("base.json", {'data':str(data_dict)})

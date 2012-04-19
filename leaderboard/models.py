@@ -2,7 +2,7 @@ from django.db import models
 
 class User(models.Model):
     name = models.CharField(max_length=200)
-    rank = models.IntegerField()
+    rank = models.IntegerField(null=True)
 
     def __unicode__(self):
         return self.name
