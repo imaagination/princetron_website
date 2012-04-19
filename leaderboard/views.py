@@ -48,6 +48,7 @@ def add_game(request):
                     user.rank = rank
                     user.save()
                 else:
+                    highest_set = True
                     if user.rank < highest_rank:
                         highest_rank = user.rank
                     
@@ -56,16 +57,17 @@ def add_game(request):
 
                 loser_objs.append(user)
 
-
-
-            winner_obj.rank = highest_rank
+            if not highest_set:
+                highest_rank = len(User.objects.all()) - len(losers)
+            
+            winner_obj.rank = min(highest_rank, prev_rank)
             winner_obj.save()
 
             # Adjust all others
             for user in User.objects.all():
                 if user.name == winner:
                     continue
-                if user.rank <= prev_rank and user.rank >= highest_rank:
+                if user.rank <= prev_rank and user.rank >= highest_rank and highest_set:
                     user.rank = user.rank + 1
                     user.save()
                 
