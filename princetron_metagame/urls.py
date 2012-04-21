@@ -8,6 +8,6 @@ urlpatterns = patterns('',
                        url(r'^leaderboard/$', 'leaderboard.views.leaders'),
                        url(r'^game/$', 'leaderboard.views.add_game'),
                        url(r'^admin/', include(admin.site.urls)),
-                       url(r'^u/(?P<username>[-\w]+)/', 'leaderboard.views.user'),
+                       url(r'^u/(?P<username>[-\w\.]+)/', 'leaderboard.views.user'),
                        
                        )
