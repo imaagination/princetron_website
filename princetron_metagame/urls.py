@@ -7,13 +7,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
                        url(r'^leaderboard/$', 'leaderboard.views.leaders'),
                        url(r'^game/$', 'leaderboard.views.add_game'),
-    # Examples:
-    # url(r'^$', 'princetron_metagame.views.home', name='home'),
-    # url(r'^princetron_metagame/', include('princetron_metagame.foo.urls')),
-
-    # Uncomment the admin/doc line below to enable admin documentation:
-    # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
-                           url(r'^admin/', include(admin.site.urls)),
-)
+                       url(r'^admin/', include(admin.site.urls)),
+                       url(r'^u/(?P<username>[-\w]+)/', 'leaderboard.views.user'),
+                       
+                       )
