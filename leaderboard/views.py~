@@ -7,18 +7,21 @@ import json, sys
 def user(request, username):
     user = get_object_or_404(User, name=username)
     data = {}
-    joined = user.joined
+    joined = user.joined_date
     data['rank'] = user.rank
     data['wins'] = user.wins
     data['losses'] = user.losses
-    data['joined_month'] = joined.month()
-    data_json = json.dumpes(data)
+    data['joined_month'] = joined.month
+    data['joined_day'] = joined.day
+    data['joined_year'] = joined.year
+
+    data_json = json.dumps(data)
     return render_to_response("base.json", {'data':data_json})
 
 
 def leaders(request):
     leaders = User.objects.all()
-    users = [0]*10
+    users = [None]*10
     board = {}
 
     for leader in leaders:
@@ -50,7 +53,7 @@ def add_game(request):
             if created: #Created new
                 winner_obj.wins = 1
                 winner_obj.losses = 0
-                winner_obj.joined = t
+                winner_obj.joined_date = t
                 prev_rank = sys.maxint
             else:
                 winner_obj.wins += 1
@@ -65,7 +68,7 @@ def add_game(request):
                     user.rank = rank
                     user.wins = 0
                     user.losses = 1
-                    user.joined = t
+                    user.joined_date = t
                 else:
                     highest_set = True
                     user.losses += 1

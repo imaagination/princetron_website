@@ -5,6 +5,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
+                       url(r'^$', 'leaderboard.views.game'),
                        url(r'^leaderboard/$', 'leaderboard.views.leaders'),
                        url(r'^game/$', 'leaderboard.views.add_game'),
                        url(r'^admin/', include(admin.site.urls)),

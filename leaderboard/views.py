@@ -4,6 +4,9 @@ from leaderboard.models import Game, User
 from datetime import datetime
 import json, sys
 
+def game(request):
+    return render_to_response("princetron.html", {'data':None})
+
 def user(request, username):
     user = get_object_or_404(User, name=username)
     data = {}
@@ -21,7 +24,7 @@ def user(request, username):
 
 def leaders(request):
     leaders = User.objects.all()
-    users = [0]*10
+    users = [None]*10
     board = {}
 
     for leader in leaders:
