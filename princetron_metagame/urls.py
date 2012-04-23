@@ -1,4 +1,7 @@
 from django.conf.urls import patterns, include, url
+import os
+
+SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -11,5 +14,5 @@ urlpatterns = patterns('',
                        url(r'^admin/', include(admin.site.urls)),
                        url(r'^u/(?P<username>[-\w\.]+)/', 'leaderboard.views.user'),
                        url(r'^static/(?P<path>.*)$', 'django.views.static.serve', 
-                        {'document_root': '/Users/andykaier/Documents/cos333/princetron_website/static'}),
+                        {'document_root': os.path.join(SITE_ROOT, 'static')}),
                        )
