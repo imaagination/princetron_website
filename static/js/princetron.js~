@@ -32,9 +32,6 @@
 			<div id="billboard"></div>
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-
-		<script src="/static/js/princetron.js"></script>
-<!--
 		<script type="text/javascript">
 			// Websocket connection
 			var socket = new WebSocket('ws://ec2-107-22-122-48.compute-1.amazonaws.com:8080');
@@ -223,6 +220,5 @@
 			}
 
 		</script>
--->
 	</body>
 </html>

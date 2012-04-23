@@ -1,41 +1,3 @@
-<!doctype html>
-<html class="no-js" lang="en"> 
-	<head>
-		<meta charset="utf-8">
-		<title></title>
-		<meta name="viewport" content="width=device-width">
-		<link rel="stylesheet" type="text/css" href="static/css/princetron.css"/>
-
-		<style media="screen" type="text/css">
-
-		  #barena_container {
-		  width : 400px;
-		  height : 400px;
-		  border : 1px solid black;
-		  }
-
-		</style>
-
-	</head>
-	<body>
-		<div role="main">
-			<input id="username_input" type="text" size="40" placeholder="Username"/>
-			<input id="login_button" type="button" value="Login"/>	
-			<h4>Lobby</h4>
-			<div id="lobby"></div>
-			<h4>Invitations</h4>
-			<div id="invitations"></div>
-			<input id="invite_button" type="button" value="Invite"/>	
-			<div id="arena_container">
-				<canvas id="arena" width="400" height="400"></canvas>
-			</div>
-			<div id="billboard"></div>
-		</div>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-
-		<script src="/static/js/princetron.js"></script>
-<!--
-		<script type="text/javascript">
 			// Websocket connection
 			var socket = new WebSocket('ws://ec2-107-22-122-48.compute-1.amazonaws.com:8080');
 
@@ -222,7 +184,4 @@
 				}
 			}
 
-		</script>
--->
-	</body>
-</html>
+

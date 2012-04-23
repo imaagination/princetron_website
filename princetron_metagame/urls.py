@@ -10,5 +10,6 @@ urlpatterns = patterns('',
                        url(r'^game/$', 'leaderboard.views.add_game'),
                        url(r'^admin/', include(admin.site.urls)),
                        url(r'^u/(?P<username>[-\w\.]+)/', 'leaderboard.views.user'),
-                       
+                       url(r'^static/(?P<path>.*)$', 'django.views.static.serve', 
+                        {'document_root': '/Users/andykaier/Documents/cos333/princetron_website/static'}),
                        )
