@@ -1,3 +1,5 @@
+import os 
+SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 # Django settings for princetron_metagame project.
 
 DEBUG = True
@@ -67,7 +69,7 @@ STATIC_URL = '/static_files/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    '/Users/andykaier/Documents/cos333/princetron_website',
+
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -107,9 +109,8 @@ ROOT_URLCONF = 'princetron_metagame.urls'
 WSGI_APPLICATION = 'princetron_metagame.wsgi.application'
 
 TEMPLATE_DIRS = (
-    '/app/templates/',
-    '/Users/andykaier/Documents/cos333/princetron_website/templates',
-		'/Users/petermaag/Documents/School/senior_year/COS_333/princetron/princetron_website/princetron_website/templates'
+    os.path.join(SITE_ROOT, 'templates'),
+
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
