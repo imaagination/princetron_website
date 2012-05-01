@@ -1,3 +1,33 @@
+                        var LinkedList = function() {
+
+			    var that = {}, first, last;
+			    
+			    that.add = function(direction, time) {
+				var node = new Node(direction, time);
+				if (first == null) {
+				    first = node;
+				    last = node;
+				}
+				else {
+				    node.next = first;
+				    first = node;
+				}
+			    };
+			    
+			    that.first = function() {
+				return first;
+			    };
+
+			    var Node = function(direction, time) {
+				this.direction = direction;
+				this.time = time;
+				var next = {};
+			    };
+
+
+			    return that;
+			};
+
 			// Websocket connection
 			var socket = new WebSocket('ws://ec2-107-22-122-48.compute-1.amazonaws.com:8080');
 
@@ -90,6 +120,7 @@
 					// Left
 					if (e.which == 106) {
 						turnPlayer(players[my_id], true);
+						turn_list.add(timestep, true);
 						socket.send(JSON.stringify({ "turn" : {
 							"timestamp" : timestep,
 							"isLeft" : true } }));
@@ -97,10 +128,20 @@
 					// Right
 					else if (e.which == 107) {
 						turnPlayer(players[my_id], false);
+						turn_list.add(timestep, false);
 						socket.send(JSON.stringify({ "turn" : {
 							"timestamp" : timestep,
 							"isLeft" : false } }));
 					}
+
+					var node = turn_list.first();
+					
+					while (node != null) {
+					    console.log(node.direction);
+					    console.log(node.time);
+					    node = node.next;
+					}
+					
 				}
 			});
 
@@ -116,6 +157,7 @@
 			var BOARD_DISPLAY_SIZE = 400;
 			var CELL_SIZE = BOARD_DISPLAY_SIZE / BOARD_SIZE;
 			var COLORS = [ "#F00", "#0F0", "#00F", "#FF0" ];
+                        var turn_list = new LinkedList();
 
 			function turnPlayer(player, isLeft) {
 			    console.log("Turning");
