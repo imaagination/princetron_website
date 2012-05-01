@@ -37,8 +37,19 @@
 					}, 100);
 				}
 				if ("opponentTurn" in message) {
-					turnPlayer(players[message.opponentTurn.playerId], 
-						message.opponentTurn.isLeft);	
+				    currentTime = timestep;
+				    console.log("Me:" + timestep);
+				    console.log("Opponent:" + message.opponentTurn.timestamp);
+				    for (var i = 0; i < currentTime - message.opponentTurn.timestamp; i++) {
+					stepBack();
+				    }
+			
+				    turnPlayer(players[message.opponentTurn.playerId], message.opponentTurn.isLeft);	
+
+				    for (var i = 0; i < currentTime - message.opponentTurn.timestamp; i++) {
+					stepForward();
+				    }
+
 				}
 				if ("gameResult" in message) {
 					if (message.gameResult.result == "loss") {
@@ -79,16 +90,16 @@
 					// Left
 					if (e.which == 106) {
 						turnPlayer(players[my_id], true);
-						socket.send(JSON.stringify({ turn : {
-							timestamp : timestep,
-							isLeft : true } }));
+						socket.send(JSON.stringify({ "turn" : {
+							"timestamp" : timestep,
+							"isLeft" : true } }));
 					}
 					// Right
 					else if (e.which == 107) {
 						turnPlayer(players[my_id], false);
-						socket.send(JSON.stringify({ turn : {
-							timestamp : timestep,
-							isLeft : false } }));
+						socket.send(JSON.stringify({ "turn" : {
+							"timestamp" : timestep,
+							"isLeft" : false } }));
 					}
 				}
 			});
@@ -107,6 +118,7 @@
 			var COLORS = [ "#F00", "#0F0", "#00F", "#FF0" ];
 
 			function turnPlayer(player, isLeft) {
+			    console.log("Turning");
 				if (isLeft) {
 					switch (player.dir) {
 						case "north" : player.dir = "west"; break;
@@ -138,31 +150,16 @@
 			}
 
 			function sendCollision() {
-				socket.send(JSON.stringify({collision : { timestamp : timestep}}));
+			    console.log("Sending Collision Message");
+			    socket.send(JSON.stringify({collision : { timestamp : timestep}}));
 			}
 
 			function advance() {
 				timestep++;
-				// Update position
-				for (var i = 0; i < players.length; i++) {
-					if (players[i].active) {
-						switch (players[i].dir) {
-							case "north" : players[i].y++; break;
-							case "south" : players[i].y--; break;
-							case "east" : players[i].x++; break;
-							case "west" : players[i].x--; break;
-						}
-					}
-				}
-				// Check for collisions
-				if (players[my_id].active) {
-					if (players[my_id].x < 0 || players[my_id].x >= BOARD_SIZE ||
-							players[my_id].y < 0 || players[my_id].y >= BOARD_SIZE ||
-							game_board[players[my_id].x][players[my_id].y] != -1) {
-						players[my_id].active = false;
-						sendCollision();
-					}
-				}
+
+				// Update position and collision check
+				stepForward();
+
 				// Update board
 				for (var i = 0; i < players.length; i++) {
 					if (players[i].x >= 0 && players[i].x < BOARD_SIZE &&
@@ -172,6 +169,58 @@
 					}
 				}
 			}
+                     
+
+                        function stepForward() {
+			    //Step snake forward
+			    for (var i = 0; i < players.length; i++) {
+				//mark game board
+				game_board[players[i].x][players[i].y] = i;
+				
+				if (players[i].active) {
+				    switch (players[i].dir) {
+				    case "north" : players[i].y++; break;
+				    case "south" : players[i].y--; break;
+				    case "east" : players[i].x++; break;
+				    case "west" : players[i].x--; break;
+				    }
+				}
+			    }
+			    console.log("stepping forward");
+			    // Check for collisions                                                                                                                             
+			    if (players[my_id].active) {
+				if (players[my_id].x < 0 || players[my_id].x >= BOARD_SIZE ||
+                                                        players[my_id].y < 0 || players[my_id].y >= BOARD_SIZE ||
+				    game_board[players[my_id].x][players[my_id].y] != -1) {
+				    players[my_id].active = false;
+
+				    console.log("X: " + players[my_id].x)
+				    console.log("Y: " + players[my_id].y)
+				    sendCollision();
+				}
+			    }
+
+			}
+
+                        function stepBack() {
+			    // Move everyone back one step
+			    for (var i = 0; i < players.length; i++) {
+				    if (players[i].active) {
+
+					//clear game board
+					game_board[players[i].x][players[i].y] = -1;
+
+					switch (players[i].dir) {
+					case "north" : players[i].y--; break;
+					case "south" : players[i].y++; break;
+					case "east" : players[i].x--; break;
+					case "west" : players[i].x++; break;
+					}
+				    }
+                                }
+			    console.log("Stepped Back");
+			}
+
 
 			function drawBoard() {
 				var ctx = $("#arena").get(0).getContext("2d");
