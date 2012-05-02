@@ -47,9 +47,9 @@ def add_game(request):
             date = data_dict['time']
             t = datetime.strptime(date, "%m/%d/%Y:%H:%M:%S")
             
-            losers =  request.POST.getlist('losers')
+            losers =  request.POST['losers']
             loser_objs = []
-            data_dict['losers'] = losers
+            data_dict['losers'] = losers.split(',');
             highest_rank = sys.maxint
             highest_set = False
 
