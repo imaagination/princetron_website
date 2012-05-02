@@ -13,6 +13,7 @@ urlpatterns = patterns('',
                        url(r'^game/$', 'leaderboard.views.add_game'),
                        url(r'^admin/', include(admin.site.urls)),
                        url(r'^u/(?P<username>[-\w\.]+)/', 'leaderboard.views.user'),
+                       url(r'^p/(?P<username>[-\w\.]+)/', 'leaderboard.views.profile'),
                        url(r'^static/(?P<path>.*)$', 'django.views.static.serve', 
                         {'document_root': os.path.join(SITE_ROOT, 'static')}),
                        )

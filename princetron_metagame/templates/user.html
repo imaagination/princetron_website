@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %} {{ user }} {% endblock %}
+
+{% block body %}
+
+<h1> {{ user }} </h1>
+<h2>User Since:</h2> {{joined_month}}/{{joined_day}}/{{joined_year}} </br>
+<h2>Lifetime Record:</h2> {{wins}} - {{losses}} </br>
+<h2>Ranking:</h2> {{rank}} </br>
+
+{% endblock %}

@@ -5,35 +5,43 @@ from leaderboard.models import Game, User
 from datetime import datetime
 import json, sys
 
-def game(request):
-    return render_to_response("princetron.html", {'data':None})
+def top_users(k):
+    leaders = User.objects.all()
+    users = [None]*k
+    board = {}
 
-def user(request, username):
+    for leader in leaders:
+        if leader.rank <= k:
+            users[leader.rank -  1] = leader.name
+
+    return users
+
+def game(request):
+    users = top_users(10)
+    return render_to_response("princetron.html", {'leaders':users})
+
+def user_data(username):
     user = get_object_or_404(User, name=username)
     data = {}
     joined = user.joined_date
+    data['user'] = user.name
     data['rank'] = user.rank
     data['wins'] = user.wins
     data['losses'] = user.losses
     data['joined_month'] = joined.month
     data['joined_day'] = joined.day
     data['joined_year'] = joined.year
+    return data
 
-    data_json = json.dumps(data)
+def profile(request, username):
+    return render_to_response("user.html", user_data(username))    
+
+def user(request, username):
+    data_json = json.dumps(user_data(username))
     return render_to_response("base.json", {'data':data_json})
 
-
 def leaders(request):
-    leaders = User.objects.all()
-    users = [None]*10
-    board = {}
-
-    for leader in leaders:
-        if leader.rank <= 10:
-            users[leader.rank -  1] = leader.name
-
-
-    board['users'] = users
+    board['users'] = top_users(10)
     board_json = json.dumps(board)
 
     return render_to_response("base.json", {'data':board_json})

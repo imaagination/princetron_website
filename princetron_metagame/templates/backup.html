@@ -1,8 +1,14 @@
-{% extends "base.html" %}
+<!doctype html>
+<html class="no-js" lang="en"> 
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width">
+		<link rel="stylesheet" type="text/css" href="static/css/princetron.css"/>
 
-{% block title %} Princetron {% endblock %}
-
-{% block body %}
+	</head>
+	<link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
+	<body>
 	  <h1>PRINCETRON</h1>
 
 
@@ -12,10 +18,12 @@
 		<div role="data" id="data">
                   <input id="username_input" type="text" size="40" placeholder="Username"/>
                   <input id="login_button" type="button" value="Login"/>
-
+                  <h4>Lobby</h4>
                   <div id="lobby"></div>
+                  <h4>Invitations</h4>
                   <div id="invitations"></div>
-                  <div id="button"><input id="invite_button" type="button" value="Invite"/></div>
+                  <input id="invite_button" type="button" value="Invite"/>
+
 		</div>
 	      </td>
 	      
@@ -30,7 +38,7 @@
 	      <td>
 		<h4>Leaders</h4></br>
 		{% for leader in leaders %}
-		{{forloop.counter}}. <a href = "/p/{{leader}}">{{ leader }}</a></br>
+		{{forloop.counter}}. {{ leader }} </br>
 		{% endfor %}
 	      </td>
 
@@ -38,4 +46,6 @@
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 		<script src="static/js/princetron.js"></script>
-{% endblock %}
+
+	</body>
+</html>

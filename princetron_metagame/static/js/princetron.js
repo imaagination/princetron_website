@@ -53,8 +53,15 @@
 				var message = JSON.parse(m.data);
 				if ("lobby" in message) {
 					var users = message.lobby.users
-					$("#lobby").html("");
+					$("#lobby").html("<h4>Lobby</h4>");
+					$("#invitations").html("<h4>Invitations</h4>");
+					document.getElementById('invite_button').style.visibility='visible';
+					document.getElementById('username_input').style.visibility='hidden';
+					document.getElementById('login_button').style.visibility='hidden';
 					for (var i = 0; i < users.length; i++) {
+					    if (users[i] == $('#username_input').val())
+						$("#lobby").append("<p id =\"me\">" + users[i] + "</p>");
+					    else
 						$("#lobby").append("<p>" + users[i] + "</p>");
 					}
 				}
