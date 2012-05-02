@@ -51,7 +51,7 @@ def add_game(request):
             loser_objs = []
             data_dict['losers'] = losers
             highest_rank = sys.maxint
-
+            highest_set = False
 
             winner = request.POST['winner']
             winner_obj, created = User.objects.get_or_create(name=winner)
