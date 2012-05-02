@@ -30,6 +30,11 @@
 				}
 				return null;
 			    };
+			    
+			    that.clear = function() {
+				first = null;
+				last = null;
+			    }
 
 			    var Node = function(direction, time) {
 				this.direction = direction;
@@ -71,6 +76,7 @@
 				}
 				if ("startGame" in message) {
 					game_state = "playing";
+					$('#billboard').html("");
 					timestep = 0;
 					initBoard();
 					drawBoard();
@@ -106,8 +112,9 @@
 					}
 				}
 				if ("endGame" in message) {
-					window.clearInterval(game_timer);
-					$('#billboard').html("<p>Game over!</p>");
+				    turn_list.clear();
+				    window.clearInterval(game_timer);
+				    $('#billboard').html("<p>Game over!</p>");
 				}
 			};
 
@@ -304,7 +311,7 @@
 
 					    if (node != null) {
 						console.log("Not Null, Stepping Backward");
-						if (isLeft) {
+						if (node.isLeft) {
 						    switch (players[i].dir) {
 						    case "north" : 
 							players[i].dir = "east"; break;
