@@ -47,9 +47,13 @@ def add_game(request):
             date = data_dict['time']
             t = datetime.strptime(date, "%m/%d/%Y:%H:%M:%S")
             
-            losers =  request.POST['losers']
+            losers_str = request.POST['losers']
+            losers = losers_str.split(',')
+ #           print "Here is the split string:"
+#            print losers.split(',')
+
             loser_objs = []
-            data_dict['losers'] = losers.split(',');
+            data_dict['losers'] = losers
             highest_rank = sys.maxint
             highest_set = False
 
@@ -66,6 +70,7 @@ def add_game(request):
             winner_obj.save()
 
             for loser in losers:
+                print "Loser : " + loser
                 user, created = User.objects.get_or_create(name=loser)
                 rank = len(User.objects.all())
                 print created

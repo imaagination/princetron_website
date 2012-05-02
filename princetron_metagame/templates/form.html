@@ -4,13 +4,7 @@
 {% csrf_token %}
 Time (MM/DD/YYYY:HH:MM:SS): <input type="text" name="time" />
 Winner: <input type="text" name="winner" />
-Losers:
-<select name="losers" multiple="multiple" size="5">
-{% for user in users %}
-     <option value="{{ user }}">{{ user }}</option>
-{{ user }}
-{% endfor %}
-</select>
+Losers: <input type="text" name="losers" />
 <input type="submit" value="Submit" />
 </form>
 </body>
