@@ -34,7 +34,7 @@
 			    that.clear = function() {
 				first = null;
 				last = null;
-			    }
+			    };
 
 			    var Node = function(direction, time) {
 				this.direction = direction;
