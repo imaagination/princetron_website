@@ -5,11 +5,20 @@ h1 {
 
 h4 {
    text-align:left;
+   font-size:150%
 }
 
 body {
         font-family: 'Press Start 2P', cursive;	
 	background-color:orange;
+}
+
+#main {
+      float:right;
+}
+
+#data {
+
 }
 
 #arena_container {

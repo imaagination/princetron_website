@@ -100,6 +100,8 @@ def add_game(request):
             for user in User.objects.all():
                 if user.name == winner:
                     continue
+                if not user.rank:
+                    continue
                 if user.rank <= prev_rank and user.rank >= highest_rank and highest_set:
                     user.rank = user.rank + 1
                     user.save()
