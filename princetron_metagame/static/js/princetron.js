@@ -17,6 +17,19 @@
 			    that.first = function() {
 				return first;
 			    };
+			    
+			    that.get = function(time) {
+				console.log("Looking for time: " + time);
+				var current = first;
+				while (current != null) {
+				    console.log("Available: " + current.time);
+				    if (current.time == time) {
+					return current;
+				    }
+				    current = current.next;
+				}
+				return null;
+			    };
 
 			    var Node = function(direction, time) {
 				this.direction = direction;
@@ -71,13 +84,13 @@
 				    console.log("Me:" + timestep);
 				    console.log("Opponent:" + message.opponentTurn.timestamp);
 				    for (var i = 0; i < currentTime - message.opponentTurn.timestamp; i++) {
-					stepBack();
+					stepBack(currentTime - i);
 				    }
 			
 				    turnPlayer(players[message.opponentTurn.playerId], message.opponentTurn.isLeft);	
 
 				    for (var i = 0; i < currentTime - message.opponentTurn.timestamp; i++) {
-					stepForward();
+					stepForward(message.opponentTurn.timestamp + i);
 				    }
 
 				}
@@ -120,7 +133,7 @@
 					// Left
 					if (e.which == 106) {
 						turnPlayer(players[my_id], true);
-						turn_list.add(timestep, true);
+						turn_list.add(true, timestep);
 						socket.send(JSON.stringify({ "turn" : {
 							"timestamp" : timestep,
 							"isLeft" : true } }));
@@ -128,20 +141,11 @@
 					// Right
 					else if (e.which == 107) {
 						turnPlayer(players[my_id], false);
-						turn_list.add(timestep, false);
+						turn_list.add(false, timestep);
 						socket.send(JSON.stringify({ "turn" : {
 							"timestamp" : timestep,
 							"isLeft" : false } }));
-					}
-
-					var node = turn_list.first();
-					
-					while (node != null) {
-					    console.log(node.direction);
-					    console.log(node.time);
-					    node = node.next;
-					}
-					
+					}					
 				}
 			});
 
@@ -163,18 +167,26 @@
 			    console.log("Turning");
 				if (isLeft) {
 					switch (player.dir) {
-						case "north" : player.dir = "west"; break;
-						case "south" : player.dir = "east"; break;
-						case "east" : player.dir = "north"; break;
-						case "west" : player.dir = "south"; break;
+						case "north" : 
+						    player.dir = "west"; break;
+						case "south" : 
+						    player.dir = "east"; break;
+						case "east" : 
+						    player.dir = "north"; break;
+						case "west" : 
+						    player.dir = "south"; break;
 					}
 				}
 				else {
 					switch (player.dir) {
-						case "north" : player.dir = "east"; break;
-						case "south" : player.dir = "west"; break;
-						case "east" : player.dir = "south"; break;
-						case "west" : player.dir = "north"; break;
+						case "north" : 
+						    player.dir = "east"; break;
+						case "south" : 
+						    player.dir = "west"; break;
+					        case "east" : 
+						    player.dir = "south"; break;
+						case "west" : 
+						    player.dir = "north"; break;
 					}
 				}
 			}
@@ -213,11 +225,46 @@
 			}
                      
 
-                        function stepForward() {
+                        function stepForward(time) {
 			    //Step snake forward
 			    for (var i = 0; i < players.length; i++) {
-				//mark game board
-				game_board[players[i].x][players[i].y] = i;
+				    //mark game board                                                                                                                                   
+				if (players[my_id].x >= 0 && players[my_id].y >= 0 && players[my_id].x <= BOARD_SIZE && players[my_id].y <= BOARD_SIZE) {           
+				    game_board[players[i].x][players[i].y] = i;
+				} 
+
+				if (i == my_id) {
+				    var node = turn_list.get(time);
+				    
+				    if (node != null) {
+					console.log("Not Null, Stepping Forward");
+					if (isLeft) {
+					    switch (players[i].dir) {
+					    case "north" :
+						players[i].dir = "west"; break;
+					    case "south" :
+						players[i].dir = "east"; break;
+					    case "east" :
+						players[i].dir = "north"; break;
+					    case "west" :
+						players[i].dir = "south"; break;
+					    }
+					}
+					else {
+					    switch (players[i].dir) {
+					    case "north" :
+						players[i].dir = "east"; break;
+					    case "south" :
+						players[i].dir = "west"; break;
+					    case "east" :
+						players[i].dir = "south"; break;
+					    case "west" :
+						players[i].dir = "north"; break;
+					    }
+					}
+				    }
+				}
+
 				
 				if (players[i].active) {
 				    switch (players[i].dir) {
@@ -228,11 +275,14 @@
 				    }
 				}
 			    }
+
 			    console.log("stepping forward");
-			    // Check for collisions                                                                                                                             
+			    // Check for collisions     
 			    if (players[my_id].active) {
-				if (players[my_id].x < 0 || players[my_id].x >= BOARD_SIZE ||
-                                                        players[my_id].y < 0 || players[my_id].y >= BOARD_SIZE ||
+				if (players[my_id].x < 0 || 
+				    players[my_id].x >= BOARD_SIZE ||
+                                    players[my_id].y < 0 || 
+				    players[my_id].y >= BOARD_SIZE ||
 				    game_board[players[my_id].x][players[my_id].y] != -1) {
 				    players[my_id].active = false;
 
@@ -244,11 +294,43 @@
 
 			}
 
-                        function stepBack() {
+                        function stepBack(time) {
 			    // Move everyone back one step
 			    for (var i = 0; i < players.length; i++) {
 				    if (players[i].active) {
 
+					if (i == my_id) {
+					    var node = turn_list.get(time);
+
+					    if (node != null) {
+						console.log("Not Null, Stepping Backward");
+						if (isLeft) {
+						    switch (players[i].dir) {
+						    case "north" : 
+							players[i].dir = "east"; break;
+						    case "south" : 
+							players[i].dir = "west"; break;
+						    case "east" : 
+							players[i].dir = "south"; break;
+						    case "west" : 
+							players[i].dir = "north"; break;
+						    }
+						}
+						else {
+						    switch (players[i].dir) {
+						    case "north" : 
+							players[i].dir = "west"; break;
+						    case "south" : 
+							players[i].dir = "east"; break;
+						    case "east" : 
+							players[i].dir = "north"; break;
+						    case "west" : 
+							players[i].dir = "south"; break;
+						    }
+						}
+					    }
+					}
+						
 					//clear game board
 					game_board[players[i].x][players[i].y] = -1;
 
