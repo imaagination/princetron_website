@@ -1,3 +1,4 @@
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.context_processors import csrf
 from leaderboard.models import Game, User
@@ -37,6 +38,7 @@ def leaders(request):
 
     return render_to_response("base.json", {'data':board_json})
 
+@csrf_exempt 
 def add_game(request):
     if request.method == 'POST':
         data_dict = {}
@@ -115,7 +117,7 @@ def add_game(request):
             users.append(user)
 
         c['users'] = users
-        c.update(csrf(request))
+        #c.update(csrf(request))
         return render_to_response("form.html", c)
 
             

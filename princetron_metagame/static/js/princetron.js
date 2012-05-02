@@ -228,7 +228,7 @@
                         function stepForward(time) {
 			    //Step snake forward
 			    for (var i = 0; i < players.length; i++) {
-				    //mark game board                                                                                                                                   
+				//mark game board                                                                                                                            
 				if (players[my_id].x >= 0 && players[my_id].y >= 0 && players[my_id].x <= BOARD_SIZE && players[my_id].y <= BOARD_SIZE) {           
 				    game_board[players[i].x][players[i].y] = i;
 				} 
@@ -238,7 +238,7 @@
 				    
 				    if (node != null) {
 					console.log("Not Null, Stepping Forward");
-					if (isLeft) {
+					if (node.isLeft) {
 					    switch (players[i].dir) {
 					    case "north" :
 						players[i].dir = "west"; break;
