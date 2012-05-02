@@ -1,4 +1,14 @@
+h1 {
+   font-size:450%;
+   text-align:center;   
+}
+
+h4 {
+   text-align:left;
+}
+
 body {
+        font-family: 'Press Start 2P', cursive;	
 	background-color:orange;
 }
 
