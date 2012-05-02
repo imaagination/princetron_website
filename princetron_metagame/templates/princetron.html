@@ -10,33 +10,35 @@
 	<link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
 	<body>
 	  <h1>PRINCETRON</h1>
-	  <div id="container">
-            
-	    <div role="main" id="main">
-              <div id="arena_container">
-                <canvas id="arena" width="400" height="400"></canvas>
-              </div>
-              <div id="billboard"></div>
-            </div>
-	    
+
+
+	  <table>
+	    <tr>
+	      <td>            
 		<div role="data" id="data">
-			<input id="username_input" type="text" size="40" placeholder="Username"/>
-			<input id="login_button" type="button" value="Login"/>	
-			<h4>Lobby</h4>
-			<div id="lobby"></div>
-			<h4>Invitations</h4>
-			<div id="invitations"></div>
-			<input id="invite_button" type="button" value="Invite"/>	
-			
-		</div>
-
-		<div id="leaders">
+                  <input id="username_input" type="text" size="40" placeholder="Username"/>
+                  <input id="login_button" type="button" value="Login"/>
+                  <h4>Lobby</h4>
+                  <div id="lobby"></div>
+                  <h4>Invitations</h4>
+                  <div id="invitations"></div>
+                  <input id="invite_button" type="button" value="Invite"/>
 
 		</div>
+	      </td>
+	      
+	      <td>          
+		<div role="main" id="main">
+		  <div id="arena_container">
+                    <canvas id="arena" width="400" height="400"></canvas>
+		  </div>
+		  <div id="billboard"></div>
+              </div></td>
+	      
+	      <td>Leaders</td>
+	    </tr>
 
-	</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-
 		<script src="static/js/princetron.js"></script>
 
 	</body>
