@@ -272,7 +272,7 @@
 				    game_board[players[my_id].x][players[my_id].y] != -1) {
 				    players[my_id].active = false;
 
-				    console.log("Board: " + game_board[players[my_id].x][players[my_id].y]);
+				    // console.log("Board: " + game_board[players[my_id].x][players[my_id].y]);
 				    console.log("X: " + players[my_id].x)
 				    console.log("Y: " + players[my_id].y)
 				    sendCollision();
