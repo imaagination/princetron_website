@@ -19,10 +19,10 @@
 			    };
 			    
 			    that.get = function(time) {
-				console.log("Looking for time: " + time);
+				
 				var current = first;
 				while (current != null) {
-				    console.log("Available: " + current.time);
+				    console.log("Looking for time: " + time + " " + current.time);
 				    if (current.time == time) {
 					return current;
 				    }
@@ -56,8 +56,8 @@
 					$("#lobby").html("<h4>Lobby</h4>");
 					$("#invitations").html("<h4>Invitations</h4>");
 					document.getElementById('invite_button').style.visibility='visible';
-					document.getElementById('username_input').style.visibility='hidden';
-					document.getElementById('login_button').style.visibility='hidden';
+					document.getElementById('username_input').style.display='none';
+					document.getElementById('login_button').style.display='none';
 					for (var i = 0; i < users.length; i++) {
 					    if (users[i] == $('#username_input').val())
 						$("#lobby").append("<p id =\"me\">" + users[i] + "</p>");
@@ -84,6 +84,7 @@
 				if ("startGame" in message) {
 					game_state = "playing";
 					$('#billboard').html("");
+					turn_list.clear();
 					timestep = 0;
 					initBoard();
 					drawBoard();
@@ -119,7 +120,6 @@
 					}
 				}
 				if ("endGame" in message) {
-				    turn_list.clear();
 				    window.clearInterval(game_timer);
 				    $('#billboard').html("<p>Game over!</p>");
 				}
@@ -290,7 +290,7 @@
 				}
 			    }
 
-			    console.log("stepping forward");
+
 			    // Check for collisions     
 			    if (players[my_id].active) {
 				if (players[my_id].x < 0 || 
