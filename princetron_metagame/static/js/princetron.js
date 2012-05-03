@@ -239,6 +239,7 @@
 
 				//mark game board                                                                                                                            
 				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x <= BOARD_SIZE && players[i].y <= BOARD_SIZE) {           
+				    console.log(i);
 				    game_board[players[i].x][players[i].y] = i;
 				} 
 
