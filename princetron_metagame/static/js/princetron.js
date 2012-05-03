@@ -48,8 +48,8 @@
 				}
 				if ("opponentTurn" in message) {
 				    currentTime = timestep;
-				    console.log("Me:" + timestep);
-				    console.log("Opponent:" + message.opponentTurn.timestamp);
+				    console.log("Received Turn");
+				    
 				    
 				    for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
 					stepBack(currentTime - i);
@@ -120,6 +120,8 @@
 					turnPlayer(players[my_id], direction);
 				    
 				    player_turns[my_id][turn_time] = direction;
+
+				    console.log("Sending Turn Message");
 				    socket.send(JSON.stringify({ "turn" : {
 						    "timestamp" : turn_time,
 							"isLeft" : direction } }));
