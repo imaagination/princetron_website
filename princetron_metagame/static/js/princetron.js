@@ -73,18 +73,19 @@
 				if ("enterArena" in message) {
 					var player_specs = message.enterArena.players;
 					players = new Array(player_specs.length);
+					player_turns = new Array(player_specs.length);
 					for (var i = 0; i < player_specs.length; i++) {
 						players[i] = { x : player_specs[i].xStart, 
 												 	 y : player_specs[i].yStart,
 													 dir : player_specs[i].dirStart,
 													 active : true };
+						player_turns[i] = new Array();
 					}
 					my_id = message.enterArena.playerId;
 				}
 				if ("startGame" in message) {
 					game_state = "playing";
-					$('#billboard').html("");
-					turn_list.clear();
+					$('#billboard').html("");;
 					timestep = 0;
 					initBoard();
 					drawBoard();
@@ -97,13 +98,15 @@
 				    currentTime = timestep;
 				    console.log("Me:" + timestep);
 				    console.log("Opponent:" + message.opponentTurn.timestamp);
-				    for (var i = 0; i < currentTime - message.opponentTurn.timestamp; i++) {
+				    
+				    for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
 					stepBack(currentTime - i);
 				    }
-			
-				    turnPlayer(players[message.opponentTurn.playerId], message.opponentTurn.isLeft);	
+				    
+				    player_turns[message.opponentTurn.playerId][message.opponentTurn.timestamp] = message.opponentTurn.isLeft;
+				    //turnPlayer(players[message.opponentTurn.playerId], message.opponentTurn.isLeft);	
 
-				    for (var i = 0; i < currentTime - message.opponentTurn.timestamp; i++) {
+				    for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
 					stepForward(message.opponentTurn.timestamp + i);
 				    }
 
@@ -145,22 +148,28 @@
 			$(document).keypress(function(e) {
 				if (game_state == "playing") {
 					// Left
-					if (e.which == 106) {
-						turnPlayer(players[my_id], true);
-						turn_list.add(true, timestep);
-						socket.send(JSON.stringify({ "turn" : {
-							"timestamp" : timestep,
-							"isLeft" : true } }));
-					}
-					// Right
-					else if (e.which == 107) {
-						turnPlayer(players[my_id], false);
-						turn_list.add(false, timestep);
-						socket.send(JSON.stringify({ "turn" : {
-							"timestamp" : timestep,
-							"isLeft" : false } }));
-					}					
+				    var direction;
+				    if (e.which == 106) 
+					direction = true;
+				    else if (e.which == 107)
+					direction = false;
+				    else return;
+				    
+				    var turn_time = timestep;
+
+				    while (!(typeof players[my_id][turn_time] === 'undefined')) 
+					turn_time++;
+
+				    if (turn_time == timestep)
+					turnPlayer(players[my_id], direction);
+				    
+				    player_turns[my_id][turn_time] = direction;
+				    socket.send(JSON.stringify({ "turn" : {
+						    "timestamp" : turn_time,
+							"isLeft" : direction } }));
 				}
+
+			
 			});
 
 			// Game logic
@@ -176,6 +185,8 @@
 			var CELL_SIZE = BOARD_DISPLAY_SIZE / BOARD_SIZE;
 			var COLORS = [ "#F00", "#0F0", "#00F", "#FF0" ];
                         var turn_list = new LinkedList();
+                        var player_turns;
+
 
 			function turnPlayer(player, isLeft) {
 			    console.log("Turning");
@@ -205,6 +216,34 @@
 				}
 			}
 
+                        function unturnPlayer(player, isLeft) {
+			    if (isLeft) {
+				switch (player.dir) {
+				case "north" :
+				    player.dir = "east"; break;
+				case "south" :
+				    player.dir = "west"; break;
+				case "east" :
+				    player.dir = "south"; break;
+				case "west" :
+				    player.dir = "north"; break;
+				}
+			    }
+                            else {
+				switch (player.dir) {
+				case "north" :
+				    player.dir = "west"; break;
+				case "south" :
+				    player.dir = "east"; break;
+				case "east" :
+				    player.dir = "north"; break;
+				case "west" :
+				    player.dir = "south"; break;
+				}
+			    }
+
+			}
+   
 			function initBoard() {
 				game_board = new Array(BOARD_SIZE);
 				for (var i = 0; i < BOARD_SIZE; i++) {
@@ -242,52 +281,27 @@
                         function stepForward(time) {
 			    //Step snake forward
 			    for (var i = 0; i < players.length; i++) {
+
 				//mark game board                                                                                                                            
-				if (players[my_id].x >= 0 && players[my_id].y >= 0 && players[my_id].x <= BOARD_SIZE && players[my_id].y <= BOARD_SIZE) {           
+				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x <= BOARD_SIZE && players[i].y <= BOARD_SIZE) {           
 				    game_board[players[i].x][players[i].y] = i;
 				} 
 
-				if (i == my_id) {
-				    var node = turn_list.get(time);
-				    
-				    if (node != null) {
-					console.log("Not Null, Stepping Forward");
-					if (node.isLeft) {
-					    switch (players[i].dir) {
-					    case "north" :
-						players[i].dir = "west"; break;
-					    case "south" :
-						players[i].dir = "east"; break;
-					    case "east" :
-						players[i].dir = "north"; break;
-					    case "west" :
-						players[i].dir = "south"; break;
-					    }
-					}
-					else {
-					    switch (players[i].dir) {
-					    case "north" :
-						players[i].dir = "east"; break;
-					    case "south" :
-						players[i].dir = "west"; break;
-					    case "east" :
-						players[i].dir = "south"; break;
-					    case "west" :
-						players[i].dir = "north"; break;
-					    }
-					}
-				    }
-				}
+                                if (players[i].active) {
+                                    switch (players[i].dir) {
+                                    case "north" : players[i].y++; break;
+                                    case "south" : players[i].y--; break;
+                                    case "east" : players[i].x++; break;
+                                    case "west" : players[i].x--; break;
+                                    }
+                                }
 
-				
 				if (players[i].active) {
-				    switch (players[i].dir) {
-				    case "north" : players[i].y++; break;
-				    case "south" : players[i].y--; break;
-				    case "east" : players[i].x++; break;
-				    case "west" : players[i].x--; break;
+				    if (!(typeof player_turns[i][time] === "undefined")) {
+					turnPlayer(players[i], player_turns[i][time]);
 				    }
 				}
+			      
 			    }
 
 
@@ -300,6 +314,7 @@
 				    game_board[players[my_id].x][players[my_id].y] != -1) {
 				    players[my_id].active = false;
 
+				    console.log("Board: " + game_board[players[my_id].x][players[my_id].y]);
 				    console.log("X: " + players[my_id].x)
 				    console.log("Y: " + players[my_id].y)
 				    sendCollision();
@@ -308,42 +323,15 @@
 
 			}
 
+
                         function stepBack(time) {
 			    // Move everyone back one step
 			    for (var i = 0; i < players.length; i++) {
 				    if (players[i].active) {
-
-					if (i == my_id) {
-					    var node = turn_list.get(time);
-
-					    if (node != null) {
-						console.log("Not Null, Stepping Backward");
-						if (node.isLeft) {
-						    switch (players[i].dir) {
-						    case "north" : 
-							players[i].dir = "east"; break;
-						    case "south" : 
-							players[i].dir = "west"; break;
-						    case "east" : 
-							players[i].dir = "south"; break;
-						    case "west" : 
-							players[i].dir = "north"; break;
-						    }
-						}
-						else {
-						    switch (players[i].dir) {
-						    case "north" : 
-							players[i].dir = "west"; break;
-						    case "south" : 
-							players[i].dir = "east"; break;
-						    case "east" : 
-							players[i].dir = "north"; break;
-						    case "west" : 
-							players[i].dir = "south"; break;
-						    }
-						}
-					    }
+					if (!(typeof player_turns[i][time] === "undefined")) {
+						unturnPlayer(players[i], player_turns[i][time]);
 					}
+				    }
 						
 					//clear game board
 					game_board[players[i].x][players[i].y] = -1;
@@ -354,8 +342,7 @@
 					case "east" : players[i].x--; break;
 					case "west" : players[i].x++; break;
 					}
-				    }
-                                }
+			    }
 			    console.log("Stepped Back");
 			}
 
