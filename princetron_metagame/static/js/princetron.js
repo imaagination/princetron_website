@@ -114,14 +114,13 @@
 					    turn_time++;
 					}
 
-				    console.log("Timestep: " + timestep + " Turn Time: " + turn_time);
+				    console.log("My turn timestep: " + timestep + " Turn Time: " + turn_time);
 
 				    if (turn_time == timestep)
 					turnPlayer(players[my_id], direction);
 				    
 				    player_turns[my_id][turn_time] = direction;
 
-				    console.log("Sending Turn Message");
 				    socket.send(JSON.stringify({ "turn" : {
 						    "timestamp" : turn_time,
 							"isLeft" : direction } }));
@@ -146,7 +145,6 @@
 
 
 			function turnPlayer(player, isLeft) {
-			    console.log("Turning");
 				if (isLeft) {
 					switch (player.dir) {
 						case "north" : 
@@ -240,8 +238,7 @@
 			    for (var i = 0; i < players.length; i++) {
 
 				//mark game board                                                                                                                            
-				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {           
-				    console.log(i);
+				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {          
 				    game_board[players[i].x][players[i].y] = i;
 				} 
 
@@ -271,10 +268,6 @@
 				    players[my_id].y >= BOARD_SIZE ||
 				    game_board[players[my_id].x][players[my_id].y] != -1) {
 				    players[my_id].active = false;
-
-				    // console.log("Board: " + game_board[players[my_id].x][players[my_id].y]);
-				    console.log("X: " + players[my_id].x)
-				    console.log("Y: " + players[my_id].y)
 				    sendCollision();
 				}
 			    }
@@ -291,8 +284,10 @@
 					}
 				    }
 						
-					//clear game board
+				    //clear game board
+				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {          
 					game_board[players[i].x][players[i].y] = -1;
+				}
 
 					switch (players[i].dir) {
 					case "north" : players[i].y--; break;
