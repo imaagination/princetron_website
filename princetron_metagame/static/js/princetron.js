@@ -1,51 +1,3 @@
-                        var LinkedList = function() {
-
-			    var that = {}, first, last;
-			    
-			    that.add = function(direction, time) {
-				var node = new Node(direction, time);
-				if (first == null) {
-				    first = node;
-				    last = node;
-				}
-				else {
-				    node.next = first;
-				    first = node;
-				}
-			    };
-			    
-			    that.first = function() {
-				return first;
-			    };
-			    
-			    that.get = function(time) {
-				
-				var current = first;
-				while (current != null) {
-				    console.log("Looking for time: " + time + " " + current.time);
-				    if (current.time == time) {
-					return current;
-				    }
-				    current = current.next;
-				}
-				return null;
-			    };
-			    
-			    that.clear = function() {
-				first = null;
-				last = null;
-			    };
-
-			    var Node = function(direction, time) {
-				this.direction = direction;
-				this.time = time;
-				var next = {};
-			    };
-
-
-			    return that;
-			};
-
 			// Websocket connection
 			var socket = new WebSocket('ws://ec2-107-22-122-48.compute-1.amazonaws.com:8080');
 
@@ -104,7 +56,6 @@
 				    }
 				    
 				    player_turns[message.opponentTurn.playerId][message.opponentTurn.timestamp] = message.opponentTurn.isLeft;
-				    //turnPlayer(players[message.opponentTurn.playerId], message.opponentTurn.isLeft);	
 
 				    for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
 					stepForward(message.opponentTurn.timestamp + i);
@@ -147,7 +98,6 @@
 			});
 			$(document).keypress(function(e) {
 				if (game_state == "playing") {
-					// Left
 				    var direction;
 				    if (e.which == 106) 
 					direction = true;
@@ -156,9 +106,15 @@
 				    else return;
 				    
 				    var turn_time = timestep;
+				    
+				    
+				    while (turn_time in player_turns[my_id])
+					{
+					    console.log("Triple Equals!");
+					    turn_time++;
+					}
 
-				    while (!(typeof players[my_id][turn_time] === 'undefined')) 
-					turn_time++;
+				    console.log("Timestep: " + timestep + " Turn Time: " + turn_time);
 
 				    if (turn_time == timestep)
 					turnPlayer(players[my_id], direction);
@@ -184,7 +140,6 @@
 			var BOARD_DISPLAY_SIZE = 400;
 			var CELL_SIZE = BOARD_DISPLAY_SIZE / BOARD_SIZE;
 			var COLORS = [ "#F00", "#0F0", "#00F", "#FF0" ];
-                        var turn_list = new LinkedList();
                         var player_turns;
 
 
@@ -297,7 +252,7 @@
                                 }
 
 				if (players[i].active) {
-				    if (!(typeof player_turns[i][time] === "undefined")) {
+				    if (time in player_turns[i]) {
 					turnPlayer(players[i], player_turns[i][time]);
 				    }
 				}
@@ -328,7 +283,7 @@
 			    // Move everyone back one step
 			    for (var i = 0; i < players.length; i++) {
 				    if (players[i].active) {
-					if (!(typeof player_turns[i][time] === "undefined")) {
+					if (time in player_turns[i]) {
 						unturnPlayer(players[i], player_turns[i][time]);
 					}
 				    }
