@@ -41,6 +41,7 @@ def user(request, username):
     return render_to_response("base.json", {'data':data_json})
 
 def leaders(request):
+    board = {}
     board['users'] = top_users(10)
     board_json = json.dumps(board)
 
