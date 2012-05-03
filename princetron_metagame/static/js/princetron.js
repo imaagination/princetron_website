@@ -222,7 +222,7 @@
 				timestep++;
 
 				// Update position and collision check
-				stepForward();
+				stepForward(timestep);
 
 				// Update board
 				for (var i = 0; i < players.length; i++) {
