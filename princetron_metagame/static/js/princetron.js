@@ -48,7 +48,7 @@
 				}
 				if ("opponentTurn" in message) {
 				    currentTime = timestep;
-				    console.log("Received Turn");
+				    console.log("Received Turn: My time = " + timestep + "Their Time= " + message.opponentTurn.timestamp);
 				    
 				    
 				    for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
