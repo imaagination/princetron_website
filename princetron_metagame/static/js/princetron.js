@@ -43,10 +43,26 @@
 					timestep = 0;
 					initBoard();
 					drawBoard();
-				  game_timer = window.setInterval(function(i) {
-						advance();
-						drawBoard();
-					}, 100);
+					//main_loop();
+
+					var TIMING_INTERVAL = 100;
+
+					goal_time = new Date().getTime() + TIMING_INTERVAL; 
+					game_timer = window.setInterval(function(i) {
+						
+						console.log("Hello");
+						
+						current_time_millis = new Date().getTime();
+						var difference = current_time_millis - goal_time;
+						//console.log("Goal Time: " + goal_time + " Current Time: " + current_time_millis + " Difference: " + difference);
+						
+						while(difference >= 0) {
+						    advance();
+						    //drawBoard();
+						    goal_time += TIMING_INTERVAL;
+						    difference -= TIMING_INTERVAL;
+						    }
+					    }, 100);
 				}
 				if ("opponentTurn" in message) {
 				    currentTime = timestep;
@@ -98,6 +114,7 @@
 				});
 				socket.send(JSON.stringify(msg));
 			});
+
 			$(document).keypress(function(e) {
 				if (game_state == "playing") {
 				    var direction;
@@ -144,7 +161,30 @@
 			var CELL_SIZE = BOARD_DISPLAY_SIZE / BOARD_SIZE;
 			var COLORS = [ "#F00", "#0F0", "#00F", "#FF0" ];
                         var player_turns;
+                        var goal_time;
+                        var ctx = $("#arena").get(0).getContext("2d");
 
+
+                        function main_loop() {
+			    current_time_millis = new Date().getTime();
+			    start_time = current_time_millis;
+			    goal_time = current_time_millis + 100;
+
+			    while (true)
+				{
+			    
+				    while (current_time_millis < goal_time)
+					{
+					    current_time_millis = new Date().getTime();
+					    //console.log("current: " + (current_time_millis - start_time) + "goal time: " + (goal_time - start_time));
+					}
+				    
+				    console.log("Advancing");
+				    advance();
+				    drawBoard();
+				    goal_time += 100;
+				}
+			}
 
 			function turnPlayer(player, isLeft) {
 				if (isLeft) {
@@ -224,7 +264,7 @@
 				// Update position and collision check
 				stepForward(timestep);
 
-				// Update board
+				// Update board, to be deleted
 				for (var i = 0; i < players.length; i++) {
 					if (players[i].x >= 0 && players[i].x < BOARD_SIZE &&
 							players[i].y >= 0 && players[i].y < BOARD_SIZE &&
@@ -238,9 +278,10 @@
                         function stepForward(time) {
 			    //Step snake forward
 			    for (var i = 0; i < players.length; i++) {
-				//mark game board                                                                                                                            
+				//TO BE DELETED mark game board                                                                                                                            
 				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {          
 				    game_board[players[i].x][players[i].y] = i;
+				    drawSquare(players[i].x, players[i].y, COLORS[i]);
 				} 
 
                                 if (players[i].active) {
@@ -251,6 +292,12 @@
                                     case "west" : players[i].x--; break;
                                     }
                                 }
+
+                                //mark game board                                                                                                                                
+				//if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {
+				//   game_board[players[i].x][players[i].y] = i;
+				// }
+
 
 				if (players[i].active) {
 				    if (time in player_turns[i]) {
@@ -300,14 +347,19 @@
 			    console.log("Stepped Back");
 			}
 
+                        function drawSquare(x, y, color) {
+			    ctx.fillStyle = color;
+			    ctx.fillRect(x*CELL_SIZE, (BOARD_SIZE-y-1)*CELL_SIZE, CELL_SIZE, CELL_SIZE);
+			    
+			}
+
 
 			function drawBoard() {
-				var ctx = $("#arena").get(0).getContext("2d");
 				for (var i = 0; i < BOARD_SIZE; i++) {
 					for (var j = 0; j < BOARD_SIZE; j++) {
-						if (game_board[i][j] == -1) ctx.fillStyle = "#000";
-						else ctx.fillStyle = COLORS[game_board[i][j]];
-						ctx.fillRect(i*CELL_SIZE, (BOARD_SIZE-j-1)*CELL_SIZE, CELL_SIZE, CELL_SIZE);
+					    if (game_board[i][j] == -1) drawSquare(i, j, "#000");//ctx.fillStyle = "#000";
+					    else drawSquare(i, j, COLORS[game_board[i][j]]);
+					    //ctx.fillRect(i*CELL_SIZE, (BOARD_SIZE-j-1)*CELL_SIZE, CELL_SIZE, CELL_SIZE);
 					}
 				}
 			}
