@@ -17,6 +17,16 @@ a:visited {color:#000000;}
 a:hover {color:#FF00FF;}  
 a:active {color:#000000;} 
 
+input
+{
+	width:300px;
+	height:50px;
+	font-size: 1.5em;
+	color: #ff00ff;
+	font-family: 'Press Start 2P', cursive;	
+	background: #cccccc;
+	border: 1px solid #ffffff;
+}
 
 body {
         font-family: 'Press Start 2P', cursive;	
@@ -34,15 +44,39 @@ td
 {
 	vertical-align:top;
 	border: 1px solid black;
-	width: 400px;x
+	width: 400px;
 }
 
 #me {
-    color:#0000FF;
+    color:#FF00FF;
 }
+
 #invite_button {
-	       visibility:hidden;
+	       display:none;
 }
+
+#lobby_menu {
+	    width:300px;
+	    border-width:6px;
+	    background-color:#555555;
+	    font-size:1.5em;	
+	    font-family: 'Press Start 2P', cursive;		
+	    display:none;
+}
+
+#login_button, #invite_button {
+
+	background-color: #777777;
+	border: 1px solid #ffffff;	
+	font-family: 'Press Start 2P', cursive;		
+	font-size: 12px;
+	font-weight: bold;
+	padding: 2px 6px;
+	height: 28px;
+	color: #fff;
+	border-radius: 5px;
+}
+	
 
 #main {
 

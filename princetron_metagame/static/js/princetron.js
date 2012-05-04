@@ -4,19 +4,21 @@
 			socket.onmessage = function(m) {
 				var message = JSON.parse(m.data);
 				if ("lobby" in message) {
-					var users = message.lobby.users
-					$("#lobby").html("<h4>Lobby</h4>");
-					$("#invitations").html("<h4>Invitations</h4>");
-					document.getElementById('invite_button').style.visibility='visible';
-					document.getElementById('username_input').style.display='none';
-					document.getElementById('login_button').style.display='none';
-					for (var i = 0; i < users.length; i++) {
-					    if (users[i] == $('#username_input').val())
-						$("#lobby").append("<p id =\"me\">" + users[i] + "</p>");
-					    else
-						$("#lobby").append("<p>" + users[i] + "</p>");
-					}
+				    var users = message.lobby.users;
+				    $("#lobby").html("<h4>Lobby</h4>");
+				    $("#invitations").html("<h4>Invitations</h4>");
+				    $("#invite_button").toggle();
+				    $("#login_data").toggle();
+				    $("#lobby_menu").toggle();
+		 
+				    for (var i = 0; i < users.length; i++) {
+					if (users[i] == $('#username_input').val())
+					    $("#lobby_menu").append("<option id=\"me\">" + users[i] + "</option>");
+					else
+					    $("#lobby_menu").append("<option>" + users[i] + "</option>");
+				    }
 				}
+
 				if ("invitation" in message) {
 					if (confirm("Would you like to play with " + message.invitation.user)) {
 						socket.send(JSON.stringify({"acceptInvitation" : true}));
@@ -91,7 +93,7 @@
 
 			$("#invite_button").click(function() {
 				var msg = { "readyToPlay" : { "invitations" : []}};
-				$("#invitations p").each(function(i, e) { 
+				$("#lobby_menu > option").each(function(i, e) { 
 					msg.readyToPlay.invitations.push($(e).text());
 				});
 				socket.send(JSON.stringify(msg));
@@ -236,7 +238,6 @@
                         function stepForward(time) {
 			    //Step snake forward
 			    for (var i = 0; i < players.length; i++) {
-
 				//mark game board                                                                                                                            
 				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {          
 				    game_board[players[i].x][players[i].y] = i;
