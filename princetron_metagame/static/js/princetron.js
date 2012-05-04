@@ -51,7 +51,7 @@
 					drawBoard();
 
 					var TIMING_INTERVAL = 100;
-					var REFRESH_INTERVAL = 50;
+					var REFRESH_INTERVAL = 10;
 
 					goal_time = new Date().getTime() + TIMING_INTERVAL; 
 					game_timer = window.setInterval(function(i) {
