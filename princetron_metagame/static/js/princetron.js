@@ -88,18 +88,18 @@
 				}
 				if ("gameResult" in message) {
 					if (message.gameResult.result == "loss") {
-						$('#billboard').html("<p>Player " + 
+						$('#billboard').append("<p>Player " + 
 							message.gameResult.playerId + " loses</p>");
 						players[message.gameResult.playerId].active = false;	
 					}
 					if (message.gameResult.result == "win") {
-						$('#billboard').html("<p>Player " + 
+						$('#billboard').append("<p>Player " + 
 							message.gameResult.playerId + " wins</p>");
 					}
 				}
 				if ("endGame" in message) {
 				    window.clearInterval(game_timer);
-				    $('#billboard').html("<p>Game over!</p>");
+				    $('#billboard').append("<p>Game over!</p>");
 				}
 			};
 
