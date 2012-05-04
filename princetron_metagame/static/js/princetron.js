@@ -15,7 +15,7 @@
 					if (users[i] == $('#username_input').val())
 					    $("#lobby_menu").append("<option id=\"me\">" + users[i] + "</option>");
 					else
-					    $("#lobby_menu").append("<option>" + users[i] + "</option>");
+					    $("#lobby_menu").append("<option id=\"user" + i + "\">" + users[i] + "</option>");
 				    }
 				}
 
@@ -36,6 +36,12 @@
 						player_turns[i] = new Array();
 					}
 					my_id = message.enterArena.playerId;
+					$("#me").css("color", COLORS[my_id]);
+					/*$("#lobby_menu > option").each(function() {
+						$(this).css("color", COLORS[my_id]);
+						});	*/				
+
+
 				}
 				if ("startGame" in message) {
 					game_state = "playing";
@@ -45,6 +51,7 @@
 					drawBoard();
 
 					var TIMING_INTERVAL = 100;
+					var REFRESH_INTERVAL = 50;
 
 					goal_time = new Date().getTime() + TIMING_INTERVAL; 
 					game_timer = window.setInterval(function(i) {
@@ -53,15 +60,13 @@
 						
 						current_time_millis = new Date().getTime();
 						var difference = current_time_millis - goal_time;
-						//console.log("Goal Time: " + goal_time + " Current Time: " + current_time_millis + " Difference: " + difference);
 						
 						while(difference >= 0) {
 						    advance();
-						    //drawBoard();
 						    goal_time += TIMING_INTERVAL;
 						    difference -= TIMING_INTERVAL;
 						    }
-					    }, 100);
+					    }, REFRESH_INTERVAL);
 				}
 				if ("opponentTurn" in message) {
 				    currentTime = timestep;
@@ -73,11 +78,13 @@
 				    }
 				    
 				    player_turns[message.opponentTurn.playerId][message.opponentTurn.timestamp] = message.opponentTurn.isLeft;
+		     
 
 				    for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
 					stepForward(message.opponentTurn.timestamp + i);
 				    }
 
+				    drawBoard();
 				}
 				if ("gameResult" in message) {
 					if (message.gameResult.result == "loss") {
@@ -237,31 +244,13 @@
 
 			function advance() {
 				timestep++;
-
-				// Update position and collision check
 				stepForward(timestep);
-
-				// Update board, to be deleted
-				/*				for (var i = 0; i < players.length; i++) {
-					if (players[i].x >= 0 && players[i].x < BOARD_SIZE &&
-							players[i].y >= 0 && players[i].y < BOARD_SIZE &&
-							players[i].active) {
-						game_board[players[i].x][players[i].y] = i;	
-						drawSquare(players[i].x, players[i].y, COLORS[i]);
-					}
-					}*/
 			}
                      
 
                         function stepForward(time) {
 			    //Step snake forward
 			    for (var i = 0; i < players.length; i++) {
-				//TO BE DELETED mark game board                                                                                                                            
-				/*if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {          
-				    game_board[players[i].x][players[i].y] = i;
-				    drawSquare(players[i].x, players[i].y, COLORS[i]);
-				    } */
-
                                 if (players[i].active) {
                                     switch (players[i].dir) {
                                     case "north" : players[i].y++; break;
@@ -277,7 +266,6 @@
 				    }
 				}
 				
-
 				// Check for collisions     
 				if (players[my_id].active && i == my_id) {
 				    if (players[my_id].x < 0 || 
@@ -289,7 +277,8 @@
 					sendCollision();
 				    }
 				}
-				
+
+				//Update Board
 				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {
 				    game_board[players[i].x][players[i].y] = i;
 				    drawSquare(players[i].x, players[i].y, COLORS[i]);
@@ -310,17 +299,17 @@
 				    }
 						
 				    //clear game board
-				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {          
+				    if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {          
 					game_board[players[i].x][players[i].y] = -1;
-					drawSquare(players[i].x, players[i].y, "#000");
-				}
+					//drawSquare(players[i].x, players[i].y, "#000");
+				    }
 
-					switch (players[i].dir) {
-					case "north" : players[i].y--; break;
-					case "south" : players[i].y++; break;
-					case "east" : players[i].x--; break;
-					case "west" : players[i].x++; break;
-					}
+				    switch (players[i].dir) {
+				    case "north" : players[i].y--; break;
+				    case "south" : players[i].y++; break;
+				    case "east" : players[i].x--; break;
+				    case "west" : players[i].x++; break;
+				    }
 			    }
 			    console.log("Stepped Back");
 			}
