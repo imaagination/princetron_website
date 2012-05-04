@@ -43,7 +43,6 @@
 					timestep = 0;
 					initBoard();
 					drawBoard();
-					//main_loop();
 
 					var TIMING_INTERVAL = 100;
 
@@ -164,28 +163,6 @@
                         var goal_time;
                         var ctx = $("#arena").get(0).getContext("2d");
 
-
-                        function main_loop() {
-			    current_time_millis = new Date().getTime();
-			    start_time = current_time_millis;
-			    goal_time = current_time_millis + 100;
-
-			    while (true)
-				{
-			    
-				    while (current_time_millis < goal_time)
-					{
-					    current_time_millis = new Date().getTime();
-					    //console.log("current: " + (current_time_millis - start_time) + "goal time: " + (goal_time - start_time));
-					}
-				    
-				    console.log("Advancing");
-				    advance();
-				    drawBoard();
-				    goal_time += 100;
-				}
-			}
-
 			function turnPlayer(player, isLeft) {
 				if (isLeft) {
 					switch (player.dir) {
@@ -265,14 +242,14 @@
 				stepForward(timestep);
 
 				// Update board, to be deleted
-				for (var i = 0; i < players.length; i++) {
+				/*				for (var i = 0; i < players.length; i++) {
 					if (players[i].x >= 0 && players[i].x < BOARD_SIZE &&
 							players[i].y >= 0 && players[i].y < BOARD_SIZE &&
 							players[i].active) {
 						game_board[players[i].x][players[i].y] = i;	
 						drawSquare(players[i].x, players[i].y, COLORS[i]);
 					}
-				}
+					}*/
 			}
                      
 
@@ -280,10 +257,10 @@
 			    //Step snake forward
 			    for (var i = 0; i < players.length; i++) {
 				//TO BE DELETED mark game board                                                                                                                            
-				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {          
+				/*if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {          
 				    game_board[players[i].x][players[i].y] = i;
 				    drawSquare(players[i].x, players[i].y, COLORS[i]);
-				} 
+				    } */
 
                                 if (players[i].active) {
                                     switch (players[i].dir) {
@@ -294,34 +271,33 @@
                                     }
                                 }
 
-                                //mark game board                                                                                                                                
-				//if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {
-				//   game_board[players[i].x][players[i].y] = i;
-				// }
-
-
 				if (players[i].active) {
 				    if (time in player_turns[i]) {
 					turnPlayer(players[i], player_turns[i][time]);
 				    }
 				}
-			      
-			    }
+				
 
-
-			    // Check for collisions     
-			    if (players[my_id].active) {
-				if (players[my_id].x < 0 || 
-				    players[my_id].x >= BOARD_SIZE ||
-                                    players[my_id].y < 0 || 
-				    players[my_id].y >= BOARD_SIZE ||
-				    game_board[players[my_id].x][players[my_id].y] != -1) {
-				    players[my_id].active = false;
-				    sendCollision();
+				// Check for collisions     
+				if (players[my_id].active && i == my_id) {
+				    if (players[my_id].x < 0 || 
+					players[my_id].x >= BOARD_SIZE ||
+					players[my_id].y < 0 || 
+					players[my_id].y >= BOARD_SIZE ||
+					game_board[players[my_id].x][players[my_id].y] != -1) {
+					players[my_id].active = false;
+					sendCollision();
+				    }
+				}
+				
+				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {
+				    game_board[players[i].x][players[i].y] = i;
+				    drawSquare(players[i].x, players[i].y, COLORS[i]);
 				}
 			    }
-
 			}
+
+
 
 
                         function stepBack(time) {
