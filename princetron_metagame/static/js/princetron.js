@@ -56,7 +56,7 @@
 					goal_time = new Date().getTime() + TIMING_INTERVAL; 
 					game_timer = window.setInterval(function(i) {
 						
-						console.log("Hello");
+						//console.log("Hello");
 						
 						current_time_millis = new Date().getTime();
 						var difference = current_time_millis - goal_time;
