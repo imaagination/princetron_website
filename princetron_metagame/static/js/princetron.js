@@ -270,6 +270,7 @@
 							players[i].y >= 0 && players[i].y < BOARD_SIZE &&
 							players[i].active) {
 						game_board[players[i].x][players[i].y] = i;	
+						drawSquare(players[i].x, players[i].y, COLORS[i]);
 					}
 				}
 			}
@@ -335,6 +336,7 @@
 				    //clear game board
 				if (players[i].x >= 0 && players[i].y >= 0 && players[i].x < BOARD_SIZE && players[i].y < BOARD_SIZE) {          
 					game_board[players[i].x][players[i].y] = -1;
+					drawSquare(players[i].x, players[i].y, "#000");
 				}
 
 					switch (players[i].dir) {
