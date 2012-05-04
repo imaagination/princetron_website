@@ -93,7 +93,7 @@
 
 			$("#invite_button").click(function() {
 				var msg = { "readyToPlay" : { "invitations" : []}};
-				$("#lobby_menu > option").each(function(i, e) { 
+				$("#lobby_menu :selected").each(function(i, e) { 
 					msg.readyToPlay.invitations.push($(e).text());
 				});
 				socket.send(JSON.stringify(msg));
