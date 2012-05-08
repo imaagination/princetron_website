@@ -53,12 +53,17 @@ td
 	color: #ffffff;
 }
 
+#billboard {
+	text-align:center;
+}
+
 #me {
     color:#FF00FF;
 }
 
 #leaderboard {
 	     display:none;
+	     padding:5px;
 }
 
 #game {
@@ -86,11 +91,29 @@ td
 #lobby_menu {
 	    width:300px;
 	    height:250px;
-	    border-width:6px;
+	    border: 5px #999999 inset;	
 	    background-color:#555555;
 	    font-size:1.5em;	
 	    font-family: 'Press Start 2P', cursive;		
+	    margin-right:auto;	
+	    margin-left:auto;
+	    overflow:auto;	
+	    padding:5px;	
+	    text-align:left;
 }
+
+.lobby_item {
+	       background-color:#555555;
+	       color: #000000
+}
+
+.selected {
+	       background-color:#1589FF;
+	       color: #FFFFFF
+}
+
+
+
 
 #login_button, #invite_button {
 	background-color: #777777;

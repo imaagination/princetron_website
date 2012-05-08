@@ -6,16 +6,15 @@
 			    var message = JSON.parse(m.data);
 			    if ("lobby" in message) {
 				console.log("Lobby Message");
-				$("#lobby").toggle();
-				$("#login").toggle();
+				showElement($("#lobby"));
 				var users = message.lobby.users;
 				
 				
 				for (var i = 0; i < users.length; i++) {
 				    if (users[i] == $('#username_input').val())
-					$("#lobby_menu").append("<option id=\"me\">" + users[i] + "</option>");
+					$("#lobby_menu").append("<div class=\"lobby_item\" id=\"me\">" + users[i] + "</div>");
 					else
-					    $("#lobby_menu").append("<option id=\"user" + i + "\">" + users[i] + "</option>");
+					    $("#lobby_menu").append("<div class=\"lobby_item\">" + users[i] + "</div>");
 				}
 			    }
 			    
@@ -26,7 +25,6 @@
 			    }
 			    if ("enterArena" in message) {
 				console.log("Entering Arena");
-			
 				var player_specs = message.enterArena.players;
 				players = new Array(player_specs.length);
 				player_turns = new Array(player_specs.length);
@@ -46,12 +44,7 @@
 				
 			    }
 			    if ("startGame" in message) {
-				if($("#wait").is(":visible"))
-				    $("#wait").toggle();
-				else
-				    $("#lobby").toggle();
-
-				$("#game").toggle();
+				showElement($("#game"));
 				game_state = "playing";
 				$('#billboard').html("");;
 				timestep = 0;
@@ -106,35 +99,41 @@
 				}
 			    }
 			    if ("endGame" in message) {
-				$("#game").toggle();
-				$("#leaderboard").toggle();
+				showElement($("#leaderboard"));
+				$("#me").css("color", "#FF00FF");
 				window.clearInterval(game_timer);
 			    }
 			};
 
 			// UI handlers
-			$("#login_button").click(function() {
+                        $("#login_button").click(function() {
 				console.log("LOGIN PRESSED");
 				var msg = { "logIn" : { "user" : $('#username_input').val() }};
 				socket.send(JSON.stringify(msg));
 			});
 
-			$("#lobby").on("click", "#lobby p", function() {
-				$("#invitations").append("<p>" + $(this).html() + "</p>");
-			});
 
 			$("#invite_button").click(function() {
 				var msg = { "readyToPlay" : { "invitations" : []}};
-				$("#lobby_menu :selected").each(function(i, e) { 
+				$("div.lobby_item.selected").each(function(i, e) { 
 					msg.readyToPlay.invitations.push($(e).text());
 				});
 				socket.send(JSON.stringify(msg));
 				
-				console.log("Toggling Arena");
+				showElement($("#wait"));
+
+					    /*console.log("Toggling Arena");
 				$("#lobby").toggle();
-				$("#wait").toggle();
+				$("#wait").toggle();*/
 				
 			    });
+
+                        $("div.lobby_item").live("click", function() {
+				if($(this).hasClass("selected"))
+				    $(this).removeClass("selected");
+				else
+				    $(this).addClass("selected");			
+			   });
 
 			$(document).keypress(function(e) {
 				if (game_state == "playing") {
@@ -168,6 +167,16 @@
 
 			
 			});
+
+                        function showElement(element) {
+			    $("#login").hide();
+			    $("#lobby").hide();
+			    $("#wait").hide();
+			    $("#game").hide();
+			    $("#leaderboard").hide();
+						    
+			    element.show();
+			}
 
 			// Game logic
 			var game_board;

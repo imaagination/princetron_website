@@ -9,22 +9,23 @@
 	  <table>
 	    <tr>
 		<td id="login">
-		  </br>
-		  <input id="username_input" type="text" size="40" placeholder="Username"/>
-                  
-		  <input id="login_button" type="button" value="Login"/>
+		  <div>
+		    <input id="username_input" type="text" size="40" placeholder="Username"/>
+                  </div>
+		 </br>
+		 <input id="login_button" type="button" value="Login"/>
 		</td>
 
                 <td id="lobby">
-		  <select multiple id="lobby_menu"><option value=""></option></select>
-                  <div id="button"><input id="invite_button" type="button" value="Invite"/></div> 
+		  <div id="lobby_menu">
+		  </div>
+                  <div id="button"></br><input id="invite_button" type="button" value="Invite"/></div> 
 		</td>
 	      
 		<td id="game">
 		  <div id="arena_container">
                     <canvas id="arena" width="400" height="400"></canvas>
 		  </div>
-		  <div id="billboard"></div>
 		</td>
 	      
 	   	<td id="wait">
@@ -32,10 +33,14 @@
 		</td>
 
 		<td id="leaderboard">
-		  <h4>Leaders</h4></br>
+		  <div id="billboard"></div>
+		  <h4>Leaders</h4>
 		  {% for leader in leaders %}
 		  {{forloop.counter}}. <a href = "/p/{{leader}}">{{ leader }}</a></br>
 		  {% endfor %}
+		  
+		  <h4><a href="JavaScript:showElement($(&quot;#lobby&quot;))">Return To Lobby</a></h4>
+		  
 		</td>
 	    </tr>
 
