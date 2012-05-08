@@ -1,5 +1,6 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render_to_response, get_object_or_404
+from django.http import HttpResponse
 from django.core.context_processors import csrf
 from leaderboard.models import Game, User
 from datetime import datetime
@@ -38,14 +39,15 @@ def profile(request, username):
 
 def user(request, username):
     data_json = json.dumps(user_data(username))
-    return render_to_response("base.json", {'data':data_json})
+    #return render_to_response("base.json", {'data':data_json})
+    return HttpResponse(data_json, mimetype="application/json")
 
 def leaders(request):
     board = {}
     board['users'] = top_users(10)
     board_json = json.dumps(board)
-
-    return render_to_response("base.json", {'data':board_json})
+    return HttpResponse(board_json, mimetype="application/json")
+    #return render_to_response("base.json", {'data':board_json})
 
 @csrf_exempt 
 def add_game(request):

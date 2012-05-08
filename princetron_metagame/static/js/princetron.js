@@ -14,7 +14,7 @@ socket.onmessage = function(m) {
 	    if (users[i] == $('#username_input').val())
 		$("#lobby_menu").append("<div class=\"lobby_item\" id=\"me\">" + users[i] + "</div>");
 	    else
-		$("#lobby_menu").append("<div class=\"lobby_item\">" + users[i] + "</div>");
+		$("#lobby_menu").append("<div class=\"lobby_item\" id=\"" + users[i] + "\">" + users[i] + "</div>");
 	}
     }
     
@@ -23,27 +23,33 @@ socket.onmessage = function(m) {
 	    socket.send(JSON.stringify({"acceptInvitation" : true}));
 	}
     }
+    if ("lobbyUpdate" in message) {
+	var user = message.lobbyUpdate.user;
+	var entered = message.lobbyUpdate.entered;
+
+	if (entered) {
+	    $("#lobby_menu").append("<div class=\"lobby_item\">" + user + "</div>");
+	}
+	else {
+	    $("#" + user).remove();
+	}
+    }
     if ("enterArena" in message) {
 	console.log("Entering Arena");
 	var player_specs = message.enterArena.players;
 	players = new Array(player_specs.length);
 	player_turns = new Array(player_specs.length);
 	for (var i = 0; i < player_specs.length; i++) {
-	    players[i] = { x : player_specs[i].xStart, 
+	    players[i] = { //username : player_specs[i].user,
+		           x : player_specs[i].xStart, 
 			   y : player_specs[i].yStart,
 			   dir : player_specs[i].dirStart,
 			   active : true };
 	    player_turns[i] = new Array();
 	}
 	my_id = message.enterArena.playerId;
-	$("#me").css("color", COLORS[my_id]);
 	$("#game").addClass("highlighted");
 	$("#game").css("border-color", COLORS[my_id]);
-	/*$("#lobby_menu > option").each(function() {
-	  $(this).css("color", COLORS[my_id]);
-	  });	*/				
-	
-	
     }
     if ("startGame" in message) {
 	showElement($("#game"));
@@ -90,16 +96,23 @@ socket.onmessage = function(m) {
     }
     if ("gameResult" in message) {
 	if (message.gameResult.result == "loss") {
-	    $('#billboard').append("<p>Player " + 
-				   message.gameResult.playerId + " loses</p>");
+	    $('#billboard').append("<p>Player " + message.gameResult.playerId + " loses</p>");
+	    //players[message.gameResults.playerId].user + " loses</p>");
 	    players[message.gameResult.playerId].active = false;	
 	}
 	if (message.gameResult.result == "win") {
-	    $('#billboard').append("<p>Player " + 
-				   message.gameResult.playerId + " wins</p>");
+	    $('#billboard').append("<p>Player " + message.gameResult.playerId + " wins</p>");
+	    //players[message.gameResults.playerId].user + " loses</p>");
 	}
     }
     if ("endGame" in message) {
+	my_name = $("#username_input").val();
+	$.getJSON("u/" + my_name, function(data) {
+		$('#billboard').append(my_name + ", " + "Your record is " + data.wins + "-" + data.losses + ". Your ranking is " + data.rank + ".");
+	    });
+	console.log("Here");
+	//console.log(hr);
+	//console.log(hr.wins);
 	showElement($("#leaderboard"));
 	$("#me").css("color", "#FF00FF");
 	window.clearInterval(game_timer);
@@ -122,11 +135,6 @@ $("#invite_button").click(function() {
 	socket.send(JSON.stringify(msg));
 	
 	showElement($("#wait"));
-	
-	/*console.log("Toggling Arena");
-	  $("#lobby").toggle();
-	  $("#wait").toggle();*/
-	
     });
 
 $("div.lobby_item").live("click", function() {
