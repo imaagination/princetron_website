@@ -2,109 +2,119 @@
 			var socket = new WebSocket('ws://ec2-107-22-122-48.compute-1.amazonaws.com:8080');
 
 			socket.onmessage = function(m) {
-				var message = JSON.parse(m.data);
-				if ("lobby" in message) {
-				    var users = message.lobby.users;
-				    $("#lobby").html("<h4>Lobby</h4>");
-				    $("#invitations").html("<h4>Invitations</h4>");
-				    $("#invite_button").toggle();
-				    $("#login_data").toggle();
-				    $("#lobby_menu").toggle();
-		 
-				    for (var i = 0; i < users.length; i++) {
-					if (users[i] == $('#username_input').val())
-					    $("#lobby_menu").append("<option id=\"me\">" + users[i] + "</option>");
+			    console.log("Message Recieved");
+			    var message = JSON.parse(m.data);
+			    if ("lobby" in message) {
+				console.log("Lobby Message");
+				$("#lobby").toggle();
+				$("#login").toggle();
+				var users = message.lobby.users;
+				
+				
+				for (var i = 0; i < users.length; i++) {
+				    if (users[i] == $('#username_input').val())
+					$("#lobby_menu").append("<option id=\"me\">" + users[i] + "</option>");
 					else
 					    $("#lobby_menu").append("<option id=\"user" + i + "\">" + users[i] + "</option>");
-				    }
 				}
+			    }
+			    
+			    if ("invitation" in message) {
+				if (confirm("Would you like to play with " + message.invitation.user)) {
+				    socket.send(JSON.stringify({"acceptInvitation" : true}));
+				}
+			    }
+			    if ("enterArena" in message) {
+				console.log("Entering Arena");
+			
+				var player_specs = message.enterArena.players;
+				players = new Array(player_specs.length);
+				player_turns = new Array(player_specs.length);
+				for (var i = 0; i < player_specs.length; i++) {
+				    players[i] = { x : player_specs[i].xStart, 
+						   y : player_specs[i].yStart,
+						   dir : player_specs[i].dirStart,
+						   active : true };
+				    player_turns[i] = new Array();
+				}
+				my_id = message.enterArena.playerId;
+				$("#me").css("color", COLORS[my_id]);
+				/*$("#lobby_menu > option").each(function() {
+				  $(this).css("color", COLORS[my_id]);
+				  });	*/				
+				
+				
+			    }
+			    if ("startGame" in message) {
+				if($("#wait").is(":visible"))
+				    $("#wait").toggle();
+				else
+				    $("#lobby").toggle();
 
-				if ("invitation" in message) {
-					if (confirm("Would you like to play with " + message.invitation.user)) {
-						socket.send(JSON.stringify({"acceptInvitation" : true}));
+				$("#game").toggle();
+				game_state = "playing";
+				$('#billboard').html("");;
+				timestep = 0;
+				initBoard();
+				drawBoard();
+				
+				var TIMING_INTERVAL = 100;
+				var REFRESH_INTERVAL = 10;
+
+				goal_time = new Date().getTime() + TIMING_INTERVAL; 
+				game_timer = window.setInterval(function(i) {
+					
+					//console.log("Hello");
+					
+					current_time_millis = new Date().getTime();
+					var difference = current_time_millis - goal_time;
+					
+					while(difference >= 0) {
+					    advance();
+					    goal_time += TIMING_INTERVAL;
+					    difference -= TIMING_INTERVAL;
 					}
+				    }, REFRESH_INTERVAL);
 				}
-				if ("enterArena" in message) {
-					var player_specs = message.enterArena.players;
-					players = new Array(player_specs.length);
-					player_turns = new Array(player_specs.length);
-					for (var i = 0; i < player_specs.length; i++) {
-						players[i] = { x : player_specs[i].xStart, 
-												 	 y : player_specs[i].yStart,
-													 dir : player_specs[i].dirStart,
-													 active : true };
-						player_turns[i] = new Array();
-					}
-					my_id = message.enterArena.playerId;
-					$("#me").css("color", COLORS[my_id]);
-					/*$("#lobby_menu > option").each(function() {
-						$(this).css("color", COLORS[my_id]);
-						});	*/				
-
-
+			    if ("opponentTurn" in message) {
+				currentTime = timestep;
+				console.log("Received Turn: My time = " + timestep + "Their Time= " + message.opponentTurn.timestamp);
+				
+				
+				for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
+				    stepBack(currentTime - i);
 				}
-				if ("startGame" in message) {
-					game_state = "playing";
-					$('#billboard').html("");;
-					timestep = 0;
-					initBoard();
-					drawBoard();
-
-					var TIMING_INTERVAL = 100;
-					var REFRESH_INTERVAL = 10;
-
-					goal_time = new Date().getTime() + TIMING_INTERVAL; 
-					game_timer = window.setInterval(function(i) {
-						
-						//console.log("Hello");
-						
-						current_time_millis = new Date().getTime();
-						var difference = current_time_millis - goal_time;
-						
-						while(difference >= 0) {
-						    advance();
-						    goal_time += TIMING_INTERVAL;
-						    difference -= TIMING_INTERVAL;
-						    }
-					    }, REFRESH_INTERVAL);
+				
+				player_turns[message.opponentTurn.playerId][message.opponentTurn.timestamp] = message.opponentTurn.isLeft;
+				
+				
+				for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
+				    stepForward(message.opponentTurn.timestamp + i);
 				}
-				if ("opponentTurn" in message) {
-				    currentTime = timestep;
-				    console.log("Received Turn: My time = " + timestep + "Their Time= " + message.opponentTurn.timestamp);
-				    
-				    
-				    for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
-					stepBack(currentTime - i);
-				    }
-				    
-				    player_turns[message.opponentTurn.playerId][message.opponentTurn.timestamp] = message.opponentTurn.isLeft;
-		     
-
-				    for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
-					stepForward(message.opponentTurn.timestamp + i);
-				    }
-
-				    drawBoard();
+				
+				drawBoard();
+			    }
+			    if ("gameResult" in message) {
+				if (message.gameResult.result == "loss") {
+				    $('#billboard').append("<p>Player " + 
+							   message.gameResult.playerId + " loses</p>");
+				    players[message.gameResult.playerId].active = false;	
 				}
-				if ("gameResult" in message) {
-					if (message.gameResult.result == "loss") {
-						$('#billboard').append("<p>Player " + 
-							message.gameResult.playerId + " loses</p>");
-						players[message.gameResult.playerId].active = false;	
-					}
-					if (message.gameResult.result == "win") {
-						$('#billboard').append("<p>Player " + 
-							message.gameResult.playerId + " wins</p>");
-					}
+				if (message.gameResult.result == "win") {
+				    $('#billboard').append("<p>Player " + 
+							   message.gameResult.playerId + " wins</p>");
 				}
-				if ("endGame" in message) {
-				    window.clearInterval(game_timer);
-				    $('#billboard').append("<p>Game over!</p>");
-				}
+			    }
+			    if ("endGame" in message) {
+				$("#game").toggle();
+				$("#leaderboard").toggle();
+				window.clearInterval(game_timer);
+			    }
 			};
 
 			// UI handlers
 			$("#login_button").click(function() {
+				console.log("LOGIN PRESSED");
 				var msg = { "logIn" : { "user" : $('#username_input').val() }};
 				socket.send(JSON.stringify(msg));
 			});
@@ -119,7 +129,12 @@
 					msg.readyToPlay.invitations.push($(e).text());
 				});
 				socket.send(JSON.stringify(msg));
-			});
+				
+				console.log("Toggling Arena");
+				$("#lobby").toggle();
+				$("#wait").toggle();
+				
+			    });
 
 			$(document).keypress(function(e) {
 				if (game_state == "playing") {

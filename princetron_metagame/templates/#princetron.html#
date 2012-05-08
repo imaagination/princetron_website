@@ -9,7 +9,7 @@
 	  <table>
 	    <tr>
 		<td id="login">
-		  </br>
+		  
 		  <input id="username_input" type="text" size="40" placeholder="Username"/>
                   
 		  <input id="login_button" type="button" value="Login"/>
