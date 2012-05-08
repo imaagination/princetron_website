@@ -53,6 +53,10 @@ td
 	color: #ffffff;
 }
 
+.highlighted {
+	     border: 5px solid;
+}
+
 #billboard {
 	text-align:center;
 }

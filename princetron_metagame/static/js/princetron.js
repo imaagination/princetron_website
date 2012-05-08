@@ -37,6 +37,8 @@ socket.onmessage = function(m) {
 	}
 	my_id = message.enterArena.playerId;
 	$("#me").css("color", COLORS[my_id]);
+	$("#game").addClass("highlighted");
+	$("#game").css("border-color", COLORS[my_id]);
 	/*$("#lobby_menu > option").each(function() {
 	  $(this).css("color", COLORS[my_id]);
 	  });	*/				
