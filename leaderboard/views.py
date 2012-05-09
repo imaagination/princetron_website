@@ -39,7 +39,6 @@ def profile(request, username):
 
 def user(request, username):
     data_json = json.dumps(user_data(username))
-    #return render_to_response("base.json", {'data':data_json})
     return HttpResponse(data_json, mimetype="application/json")
 
 def leaders(request):
@@ -47,7 +46,6 @@ def leaders(request):
     board['users'] = top_users(10)
     board_json = json.dumps(board)
     return HttpResponse(board_json, mimetype="application/json")
-    #return render_to_response("base.json", {'data':board_json})
 
 @csrf_exempt 
 def add_game(request):

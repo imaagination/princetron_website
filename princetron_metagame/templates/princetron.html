@@ -35,9 +35,7 @@
 		<td id="leaderboard">
 		  <div id="billboard"></div>
 		  <h4>Leaders</h4>
-		  {% for leader in leaders %}
-		  {{forloop.counter}}. <a href = "/p/{{leader}}">{{ leader }}</a></br>
-		  {% endfor %}
+		  <div id="leaders"></div>
 		  
 		  <h4><a href="JavaScript:showElement($(&quot;#lobby&quot;))">Return To Lobby</a></h4>
 		  
