@@ -40,9 +40,6 @@ socket.onmessage = function(m) {
 	}
     }
     if ("enterArena" in message) {
-	$("#billboard").html("");
-	$("#billboard").removeClass("blink");
-	$("#leaders").html("");
 	if (blinker) {
 	    for (var i = 0; i < intervals_count; i++) {
 		clearInterval(blinker[i]);
@@ -67,7 +64,9 @@ socket.onmessage = function(m) {
     if ("startGame" in message) {
 	showElement($("#game"));
 	game_state = "playing";
-	$('#billboard').html("");;
+	$('#billboard').html("");
+	$('#user_info').html("");
+	$('#leaders').html("");
 	timestep = 0;
 	initBoard();
 	drawBoard();
@@ -121,7 +120,7 @@ socket.onmessage = function(m) {
 	console.log(my_name);
 	$.getJSON("u/" + my_name, function(data) {
 		console.log("Test");
-		$('#billboard').append(my_name + ", " + "Your record is " + data.wins + "-" + data.losses + ". Your ranking is " + data.rank + ".");
+		$('#user_info').append(my_name + ", " + "Your record is " + data.wins + "-" + data.losses + ". Your ranking is " + data.rank + ".");
 	    });
 
         $.getJSON("leaderboard/", function(data) {
