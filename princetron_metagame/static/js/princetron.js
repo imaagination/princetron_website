@@ -5,7 +5,6 @@ socket.onmessage = function(m) {
     console.log("Message Recieved");
     var message = JSON.parse(m.data);
     if ("lobby" in message) {
-	console.log("Lobby Message");
 	showElement($("#lobby"));
 	var users = message.lobby.users;
 	
@@ -15,6 +14,12 @@ socket.onmessage = function(m) {
 		$("#lobby_menu").append("<div class=\"lobby_item\" id=\"me\">" + users[i] + "</div>");
 	    else
 		$("#lobby_menu").append("<div class=\"lobby_item\" id=\"" + users[i] + "\">" + users[i] + "</div>");
+	}
+    }
+    
+    if ("loginResult" in message) {
+	if (message.loginResult.result == "failure") {
+	    $("#login_msg").html("Username Taken.</br>Try Another!");
 	}
     }
     
@@ -35,7 +40,6 @@ socket.onmessage = function(m) {
 	    $("#lobby_menu").append("<div class=\"lobby_item\" id=\"" + user + "\">" + user + "</div>");
 	}
 	else {
-	    console.log("Hello");
 	    $(".lobby_item#" + user).remove();
 	}
     }
@@ -45,7 +49,7 @@ socket.onmessage = function(m) {
 		clearInterval(blinker[i]);
 	    }
 	}
-	console.log("Entering Arena");
+
 	var player_specs = message.enterArena.players;
 	players = new Array(player_specs.length);
 	player_turns = new Array(player_specs.length);
@@ -89,7 +93,6 @@ socket.onmessage = function(m) {
     }
     if ("opponentTurn" in message) {
 	currentTime = timestep;
-	console.log("Received Turn: My time = " + timestep + "Their Time= " + message.opponentTurn.timestamp);
 	
 	for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
 	    stepBack(currentTime - i);
@@ -104,6 +107,11 @@ socket.onmessage = function(m) {
 	
 	drawBoard();
     }
+
+    if ("opponentCollision" in message) {
+	players[message.opponentCollision.playerId].active = false;
+    }
+
     if ("gameResult" in message) {
 	if (message.gameResult.result == "loss") {
 	    $('#billboard').append("<p>Player " + players[message.gameResult.playerId].username + " loses</p>");
@@ -116,35 +124,27 @@ socket.onmessage = function(m) {
 	}
     }
     if ("endGame" in message) {
-	console.log("Game Over");
 	my_name = $("#username_input").val();
-	console.log(my_name);
 	$.getJSON("u/" + my_name, function(data) {
-		console.log("Test");
 		$('#user_info').append(my_name + ", " + "Your record is " + data.wins + "-" + data.losses + ". Your ranking is " + data.rank + ".");
 	    });
 
         $.getJSON("leaderboard/", function(data) {
                 for (var i = 0; i < data.users.length; i++) {
-			console.log("Getting data");
-			$('#leaders').append("<div id=\"user" + i + "\"><a href=\"/p/" + data.users[i] + "\">" + (i+1) + ". " + data.users[i] + "</a></div>"); 
-			//$('#user' + i).each(blink);
+		    $('#leaders').append("<div id=\"user" + i + "\"><a href=\"/p/" + data.users[i] + "\">" + (i+1) + ". " + data.users[i] + "</a></div>"); 
 		}
 		
 		for (var i = 0; i < data.users.length; i++) {
 		    for (var j = 0; j < players.length; j++) {
-			console.log(players[j].username + " " + data.users[i]);
 			if (players[j].username == data.users[i]) {
-				console.log("Blinking" + data.users[i]);
-				$('#user' + i).each(blink);
+			    $('#user' + i).each(blink);
 			    }
 		    }
 		}
 	    });
 	
 
-
-	billboard_blinker = $('#billboard').each(blink);
+	$('#billboard').each(blink);
 	showElement($("#leaderboard"));
 	window.clearInterval(game_timer);
     }
@@ -163,7 +163,6 @@ function blink() {
 
 // UI handlers
 $("#login_button").click(function() {
-	console.log("LOGIN PRESSED");
 	var msg = { "logIn" : { "user" : $('#username_input').val() }};
 	socket.send(JSON.stringify(msg));
     });
@@ -223,11 +222,8 @@ $(document).keydown(function(e) {
 	    
 	    while (turn_time in player_turns[my_id])
 		{
-		    console.log("Triple Equals!");
 		    turn_time++;
 		}
-	    
-	    console.log("My turn timestep: " + timestep + " Turn Time: " + turn_time);
 	    
 	    if (turn_time == timestep)
 		turnPlayer(players[my_id], direction);
@@ -349,8 +345,7 @@ function initBoard() {
 }
 
 function sendCollision() {
-    console.log("Sending Collision Message");
-    socket.send(JSON.stringify({collision : { timestamp : timestep}}));
+       socket.send(JSON.stringify({collision : { timestamp : timestep}}));
 }
 
 function advance() {
@@ -362,31 +357,30 @@ function advance() {
 function stepForward(time) {
     //Step snake forward
     for (var i = 0; i < players.length; i++) {
-	if (players[i].active) {
-	    switch (players[i].dir) {
-	    case "north" : players[i].y++; break;
-	    case "south" : players[i].y--; break;
-	    case "east" : players[i].x++; break;
-	    case "west" : players[i].x--; break;
-	    }
+	if (!players[i].active)
+	    continue;
+
+	switch (players[i].dir) {
+	case "north" : players[i].y++; break;
+	case "south" : players[i].y--; break;
+	case "east" : players[i].x++; break;
+	case "west" : players[i].x--; break;
+	}
 	    
-	    var x_val = players[i].x;
-	    var y_val = players[i].y;
-	    if (x_val < 0 || x_val >= BOARD_SIZE || y_val < 0 || y_val >= BOARD_SIZE || game_board[x_val][y_val] != -1) {
-		players[i].pos_legal = false;
-	    }
+	var x_val = players[i].x;
+	var y_val = players[i].y;
+	if (x_val < 0 || x_val >= BOARD_SIZE || y_val < 0 || y_val >= BOARD_SIZE || game_board[x_val][y_val] != -1) {
+	    players[i].pos_legal = false;
 	}
-	
-	if (players[i].active) {
-	    if (time in player_turns[i]) {
-		turnPlayer(players[i], player_turns[i][time]);
-	    }
+   
+	if (time in player_turns[i]) {
+	    turnPlayer(players[i], player_turns[i][time]);
 	}
-	
+		
 	// Check for collisions
 	var x_val = players[my_id].x;
 	var y_val = players[my_id].y;
-	if (players[my_id].active && i == my_id) {
+	if (i == my_id) {
 	    if (x_val < 0 || x_val >= BOARD_SIZE || y_val < 0 || y_val >= BOARD_SIZE || game_board[x_val][y_val] != -1) {
 		players[my_id].active = false;
 		players[my_id].pos_legal = false;
@@ -410,11 +404,13 @@ function stepForward(time) {
 function stepBack(time) {
     // Move everyone back one step
     for (var i = 0; i < players.length; i++) {
-	if (players[i].active) {
-	    if (time in player_turns[i]) {
-		unturnPlayer(players[i], player_turns[i][time]);
-	    }
+	if (!players[i].active)
+	    continue;
+	
+	if (time in player_turns[i]) {
+	    unturnPlayer(players[i], player_turns[i][time]);
 	}
+	
 	
 	var x_val = players[i].x;
 	var y_val = players[i].y;
@@ -434,7 +430,6 @@ function stepBack(time) {
 	case "west" : players[i].x++; break;
 	}
     }
-    console.log("Stepped Back");
 }
 
 function drawSquare(x, y, color) {
