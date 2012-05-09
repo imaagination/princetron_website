@@ -35,8 +35,7 @@ socket.onmessage = function(m) {
     if ("lobbyUpdate" in message) {
 	var user = message.lobbyUpdate.user;
 	var entered = message.lobbyUpdate.entered;
-
-	if (entered) {
+	if (entered && !$("#lobby_menu").has(".lobby_item#" + user)) {
 	    $("#lobby_menu").append("<div class=\"lobby_item\" id=\"" + user + "\">" + user + "</div>");
 	}
 	else {
