@@ -54,7 +54,8 @@ socket.onmessage = function(m) {
 		           x : player_specs[i].xStart, 
 			   y : player_specs[i].yStart,
 			   dir : player_specs[i].dirStart,
-			   active : true };
+			   active : true, 
+	                   pos_legal : true };
 	    player_turns[i] = new Array();
 	}
 	my_id = message.enterArena.playerId;
@@ -95,7 +96,7 @@ socket.onmessage = function(m) {
 	}
 	
 	player_turns[message.opponentTurn.playerId][message.opponentTurn.timestamp] = message.opponentTurn.isLeft;
-	
+	players[message.opponentTurn.playerId].pos_legal = true;
 	
 	for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
 	    stepForward(message.opponentTurn.timestamp + i);
@@ -368,6 +369,12 @@ function stepForward(time) {
 	    case "east" : players[i].x++; break;
 	    case "west" : players[i].x--; break;
 	    }
+	    
+	    var x_val = players[i].x;
+	    var y_val = players[i].y;
+	    if (x_val < 0 || x_val >= BOARD_SIZE || y_val < 0 || y_val >= BOARD_SIZE || game_board[x_val][y_val] != -1) {
+		players[i].pos_legal = false;
+	    }
 	}
 	
 	if (players[i].active) {
@@ -376,15 +383,14 @@ function stepForward(time) {
 	    }
 	}
 	
-	// Check for collisions     
+	// Check for collisions
+	var x_val = players[my_id].x;
+	var y_val = players[my_id].y;
 	if (players[my_id].active && i == my_id) {
-	    if (players[my_id].x < 0 || 
-		players[my_id].x >= BOARD_SIZE ||
-		players[my_id].y < 0 || 
-		players[my_id].y >= BOARD_SIZE ||
-		game_board[players[my_id].x][players[my_id].y] != -1) {
-					players[my_id].active = false;
-					sendCollision();
+	    if (x_val < 0 || x_val >= BOARD_SIZE || y_val < 0 || y_val >= BOARD_SIZE || game_board[x_val][y_val] != -1) {
+		players[my_id].active = false;
+		players[my_id].pos_legal = false;
+		sendCollision();
 	    }
 	}
 	
@@ -395,7 +401,8 @@ function stepForward(time) {
 		board_underneath[players[i].x][players[i].y] = i;
 	    }
 	    game_board[players[i].x][players[i].y] = i;
-	    drawSquare(players[i].x, players[i].y, COLORS[i]);
+	    if (players[i].pos_legal)
+		drawSquare(players[i].x, players[i].y, COLORS[i]);
 	}
     }
 }
