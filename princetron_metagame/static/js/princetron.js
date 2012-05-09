@@ -23,7 +23,7 @@ socket.onmessage = function(m) {
 	if (players && players[my_id].active)
 	    return;
 
-	if (confirm("Would you like to play with " + message.invitation.user)) {
+	if (confirm("Would you like to play with " + message.invitation.user + "?")) {
 	    socket.send(JSON.stringify({"acceptInvitation" : true}));
 	}
     }
