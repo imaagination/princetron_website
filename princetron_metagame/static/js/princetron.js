@@ -265,7 +265,7 @@ var MAX_PLAYERS = 4;
 var BOARD_SIZE = 100;
 var BOARD_DISPLAY_SIZE = 400;
 var CELL_SIZE = BOARD_DISPLAY_SIZE / BOARD_SIZE;
-var COLORS = [ "#F00", "#0F0", "#00F", "#FF0" ];
+var COLORS = [ "#F00", "#0F0", "#00F", "#FF0", "#0FF", "#F0F"];
 var player_turns;
 var goal_time;
 var intervals_count = 0;
