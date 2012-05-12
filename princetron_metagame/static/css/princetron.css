@@ -83,7 +83,9 @@ td
 	height:100px;
 	background: #444444;
 	text-align: center;
+	display: none;
 }
+			
 
 #chat_room
 {
