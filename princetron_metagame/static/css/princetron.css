@@ -73,7 +73,9 @@ td
 #chat_input
 {
 	height:25px;
+	font-family: sans-serif;
 	font-size: 1em;
+	color: #000000;
 }
 
 #chat_box

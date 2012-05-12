@@ -24,6 +24,7 @@ socket.onmessage = function(m) {
     }
     if ("chatHear" in message) {
 	$("#chat_room").append("<div>" + message.chatHear.user + ": " + message.chatHear.message + "</div>");
+	$("#chat_room").scrollTop($("#chat_room")[0].scrollHeight);
     }
     if ("invitation" in message) {
 	//ignore if inviation comes during game
@@ -163,11 +164,12 @@ function blink() {
 }
 
 // UI handlers
-$("#login_button").click(function() {
+$("#login_button").click(login);
+
+function login() {
 	var msg = { "logIn" : { "user" : $('#username_input').val() }};
 	socket.send(JSON.stringify(msg));
-    });
-
+}
 
 $("#invite_button").click(function() {
 	var msg = { "readyToPlay" : { "invitations" : []}};
@@ -178,10 +180,13 @@ $("#invite_button").click(function() {
 	
 	showElement($("#wait"));
     });
-$("#chat_button").click(function() {
-	var msg = { "chatSpeak" : {"message" : $("#chat_input").val()}};
-	socket.send(JSON.stringify(msg));
-    });
+
+function chatSpeak() {
+    var msg = { "chatSpeak" : {"message" : $("#chat_input").val()}};
+    socket.send(JSON.stringify(msg));
+    $("#chat_input").val("");
+}
+
 $("div.lobby_item").live("click", function() {
 	if($(this).hasClass("selected"))
 	    $(this).removeClass("selected");
@@ -190,6 +195,17 @@ $("div.lobby_item").live("click", function() {
     });
 
 $(document).keydown(function(e) {
+	if (e.which == KEY_ENTER)
+	    {
+		if ($("#username_input").is(":focus")) {
+			login();
+		    }    
+		else if ($("#chat_input").is(":focus")) {
+		    chatSpeak();
+		}
+		return;
+	    }
+
 	if (game_state == "playing") {
 	    var direction;
 
@@ -277,6 +293,7 @@ var KEY_LEFT = 37;
 var KEY_UP = 38;
 var KEY_RIGHT = 39;
 var KEY_DOWN = 40;
+var KEY_ENTER = 13;
 
 function turnPlayer(player, isLeft) {
     if (isLeft) {
