@@ -98,6 +98,7 @@ td
 	height: 100px;
 	background: #888888;
 	overflow-y: scroll;
+	border: 5px #BBBBBB inset;		
 }
 
 
