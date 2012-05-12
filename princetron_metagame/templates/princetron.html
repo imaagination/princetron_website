@@ -13,14 +13,14 @@
 		    <input id="username_input" type="text" size="40" placeholder="Username"/>
                   </div>
 		 </br>
-		 <input id="login_button" type="button" value="Login"/>
+		 <input class="button" id="login_button" type="button" value="Login"/>
 		 <div id="login_msg"></div>
 		</td>
 
                 <td id="lobby">
 		  <div id="lobby_menu">
 		  </div>
-                  <div id="button"></br><input id="invite_button" type="button" value="Invite"/></div> 
+                  <div id="button"></br><input class="button" id="invite_button" type="button" value="Invite"/></div> 
 		</td>
 	      
 		<td id="game">
@@ -43,7 +43,18 @@
 		  
 		</td>
 	    </tr>
+	    <tr>
+	      <td id="chat_box">
+		</br>
+		<div id="chat_room">
+		</div>
+		<div><input id="chat_input" type="text" size="150" placeholder="Type here to chat!"/></div>
+		<div><input class="button" id="chat_button" type="button" value="Send"/></div>
+	      </td>
+	    </tr>
+	  </table>
 
+	  
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 		<script src="static/js/princetron.js"></script>
 {% endblock %}

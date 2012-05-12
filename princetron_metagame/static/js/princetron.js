@@ -22,7 +22,9 @@ socket.onmessage = function(m) {
 	    $("#login_msg").html("Username Taken.</br>Try Another!");
 	}
     }
-    
+    if ("chatHear" in message) {
+	$("#chat_room").append("<div>" + message.chatHear.user + ": " + message.chatHear.message + "</div>");
+    }
     if ("invitation" in message) {
 	//ignore if inviation comes during game
 	if (players && players[my_id].active)
@@ -176,7 +178,10 @@ $("#invite_button").click(function() {
 	
 	showElement($("#wait"));
     });
-
+$("#chat_button").click(function() {
+	var msg = { "chatSpeak" : {"message" : $("#chat_input").val()}};
+	socket.send(JSON.stringify(msg));
+    });
 $("div.lobby_item").live("click", function() {
 	if($(this).hasClass("selected"))
 	    $(this).removeClass("selected");
