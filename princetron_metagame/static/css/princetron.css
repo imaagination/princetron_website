@@ -94,11 +94,11 @@ td
 	font-family: sans-serif;
 	font-size: 12px;
 	text-align: left;
-	width: 350px;
+	width: 300px;
 	height: 100px;
-	background: #888888;
+	background: #555;
 	overflow-y: scroll;
-	border: 5px #BBBBBB inset;		
+	border: 5px #999 inset;		
 }
 
 
