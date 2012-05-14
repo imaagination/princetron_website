@@ -4,10 +4,10 @@ var socket;
 function flipDisplay(user) {
     var leader_index = -1;
     for (var i = 0; i < leaders.length; i++) {
-	if (user == leaders[i])
+	if (leaders[i] == user)
 	    leader_index = i;
     }
-    
+
     $("#leader_specs" + leader_index).toggle();
 }
 
@@ -165,7 +165,7 @@ socket.onmessage = function(m) {
 		    leaders[i] = data.users[i].user;
 		    $('#leaders').append("<div id=\"leader" + i + "\"><a href=\"JavaScript:flipDisplay(&quot;" + data.users[i].user + 
 					 "&quot;);\">" + (i+1) + ". " + data.users[i].user + 
-					 "</a><div id=\"leader_specs" + i + "\" class=\"leaderboard_details\"> Record: " + data.users[i].wins + "-" + data.users[i].losses + 
+					 "</a></div><div id=\"leader_specs" + i + "\" class=\"leaderboard_details\"> Record: " + data.users[i].wins + "-" + data.users[i].losses + 
 "</br> User since: " + data.users[i].joined_month + "/" + data.users[i].joined_day + "/" + data.users[i].joined_year +  "</div></div>"); 
 		
 		}
@@ -181,8 +181,7 @@ socket.onmessage = function(m) {
 	
 	$('#billboard').each(blink);
 	showElement($("#leaderboard"));
-	window.clearInterval(game_timer);
-
+	window.clearInterval(game_timer);    
     }
 };
 
@@ -200,12 +199,14 @@ function blink() {
 		elem.css('visibility', 'visible');
 	    } else {
 		elem.css('visibility', 'hidden');
-	    }}
+	    }
+	}
 	, 500);
 }
 
 // UI handlers
 $("#login_button").click(login);
+
 function initSocket() {
     register(socket);
     var msg = { "logIn" : { "user" : $('#username_input').val() }};
