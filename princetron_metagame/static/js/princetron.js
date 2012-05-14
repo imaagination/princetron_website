@@ -291,7 +291,11 @@ $(document).keydown(function(e) {
 
 
 function showElement(element) {
-    $("#chat_box").show();
+    if (element == $("#login"))
+	$("#chat_box").show();
+    else
+	$("#chat_box").show();
+    
     $("#login").hide();
     $("#lobby").hide();
     $("#wait").hide();
