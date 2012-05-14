@@ -166,7 +166,7 @@ socket.onmessage = function(m) {
     }
 };
 
-socket.onClose = function (evt) {
+socket.onclose = function (evt) {
     showElement($("#login"));
     $("#login_msg").html("Connection lost. Please login again.");
 };
