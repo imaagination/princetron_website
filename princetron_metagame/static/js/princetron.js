@@ -21,10 +21,10 @@ socket.onmessage = function(m) {
     
     if ("loginResult" in message) {
 	if (message.loginResult.result == "duplicate") {
-	    $("#login_msg").html("Username Taken.</br>Try Another!");
+	    $("#login_msg").html("Username Currently Taken.</br>Try Another!");
 	}
 	else if (message.loginResult.result == "invalid") {
-            $("#login_msg").html("Invalid username. Use only numbers, letters, dots, and underscores.");
+            $("#login_msg").html("Invalid username.</br>Use only numbers, letters, dots, and underscores.");
         }
     }
     if ("chatHear" in message) {
