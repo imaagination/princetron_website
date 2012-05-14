@@ -6,21 +6,26 @@ socket.onmessage = function(m) {
     var message = JSON.parse(m.data);
     if ("lobby" in message) {
 	showElement($("#lobby"));
-	var users = message.lobby.users;
+	users = new Array();
 	
-	
-	for (var i = 0; i < users.length; i++) {
-	    if (users[i] == $('#username_input').val())
-		$("#lobby_menu").append("<div class=\"lobby_item\" id=\"me\">" + users[i] + "</div>");
+	for (var i = 0; i < message.lobby.users.length; i++) {
+	    var username = message.lobby.users[i];
+	    users[username] = i;
+	    if (username == $('#username_input').val())
+		$("#lobby_menu").append("<div class=\"lobby_item\" id=\"me\">" + username + "</div>");
 	    else
-		$("#lobby_menu").append("<div class=\"lobby_item\" id=\"" + users[i] + "\">" + users[i] + "</div>");
+		$("#lobby_menu").append("<div class=\"lobby_item\" id=\"player" + i + "\">" + username + "</div>");
 	}
+	user_count += message.lobby.users.length;
     }
     
     if ("loginResult" in message) {
-	if (message.loginResult.result == "failure") {
+	if (message.loginResult.result == "duplicate") {
 	    $("#login_msg").html("Username Taken.</br>Try Another!");
 	}
+	else if (message.loginResult.result == "invalid") {
+            $("#login_msg").html("Invalid username. Use only numbers, letters, dots, and underscores.");
+        }
     }
     if ("chatHear" in message) {
 	$("#chat_room").append("<div>" + message.chatHear.user + ": " + message.chatHear.message + "</div>");
@@ -39,10 +44,13 @@ socket.onmessage = function(m) {
 	var user = message.lobbyUpdate.user;
 	var entered = message.lobbyUpdate.entered;
 	if (entered) {
-	    $("#lobby_menu").append("<div class=\"lobby_item\" id=\"" + user + "\">" + user + "</div>");
+	    users[user] = user_count;
+	    $("#lobby_menu").append("<div class=\"lobby_item\" id=\"player" + user_count + "\">" + user + "</div>");
+	    user_count++;
 	}
 	else {
-	    $(".lobby_item#" + user).remove();
+	    var user_id = users[user];
+	    $(".lobby_item#player" + user_id).remove();
 	}
     }
     if ("enterArena" in message) {
@@ -152,6 +160,11 @@ socket.onmessage = function(m) {
     }
 };
 
+socket.onClose = function (evt) {
+    showElement($("#login"));
+    $("#interrupt").html("Connection lost. Please login again.");
+};
+
 function blink() {
     var elem = $(this);
     blinker[intervals_count++] = setInterval(function() {
@@ -173,11 +186,19 @@ function login() {
 
 $("#invite_button").click(function() {
 	var msg = { "readyToPlay" : { "invitations" : []}};
-	$("div.lobby_item.selected").each(function(i, e) { 
-		msg.readyToPlay.invitations.push($(e).text());
-	    });
-	socket.send(JSON.stringify(msg));
+	var count = 0;
 	
+	$("div.lobby_item.selected").each(function(i, e) { 
+		if ($(e).text() != $('#username_input').val()) {
+		    msg.readyToPlay.invitations.push($(e).text());
+		    count++;
+		}
+	    });
+	
+	if (count == 0)
+	    return;
+
+	socket.send(JSON.stringify(msg));	
 	showElement($("#wait"));
     });
 
@@ -287,6 +308,8 @@ var COLORS = [ "#F00", "#0F0", "#00F", "#FF0", "#0FF", "#F0F"];
 var player_turns;
 var goal_time;
 var intervals_count = 0;
+var users;
+var user_count = 0;
 var ctx = $("#arena").get(0).getContext("2d");
 var KEY_J = 74;
 var KEY_K = 75;
