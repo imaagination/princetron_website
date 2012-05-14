@@ -1,6 +1,7 @@
 // Websocket connection
-var socket = new WebSocket('ws://ec2-107-22-122-48.compute-1.amazonaws.com:8080');
+var socket;
 
+function register(socket) {
 socket.onmessage = function(m) {
     console.log("Message Recieved");
     var message = JSON.parse(m.data);
@@ -140,6 +141,7 @@ socket.onmessage = function(m) {
 	}
     }
     if ("endGame" in message) {
+	game_state = "resting";
 	my_name = $("#username_input").val();
 	$.getJSON("u/" + my_name, function(data) {
 		$('#user_info').append(my_name + ", " + "Your record is " + data.wins + "-" + data.losses + ". Your ranking is " + data.rank + ".");
@@ -168,8 +170,10 @@ socket.onmessage = function(m) {
 
 socket.onclose = function (evt) {
     showElement($("#login"));
+    $("#lobby_menu").html("");
     $("#login_msg").html("Connection lost. Please login again.");
 };
+}
 
 function blink() {
     var elem = $(this);
@@ -184,10 +188,15 @@ function blink() {
 
 // UI handlers
 $("#login_button").click(login);
+function initSocket() {
+    register(socket);
+    var msg = { "logIn" : { "user" : $('#username_input').val() }};
+    socket.send(JSON.stringify(msg));
+}
 
 function login() {
-	var msg = { "logIn" : { "user" : $('#username_input').val() }};
-	socket.send(JSON.stringify(msg));
+    socket = new WebSocket('ws://ec2-107-22-122-48.compute-1.amazonaws.com:8080');
+    socket.onopen = initSocket;
 }
 
 $("#invite_button").click(function() {
