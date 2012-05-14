@@ -173,7 +173,7 @@ socket.onmessage = function(m) {
 		for (var i = 0; i < data.users.length; i++) {
 		    for (var j = 0; j < players.length; j++) {
 			if (players[j].username == data.users[i].user) {
-			    $('#user' + i).each(blink);
+			    $('#leader' + i).each(blink);
 			}
 		    }
 		}
