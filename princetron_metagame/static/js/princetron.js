@@ -162,7 +162,7 @@ socket.onmessage = function(m) {
 
 socket.onClose = function (evt) {
     showElement($("#login"));
-    $("#interrupt").html("Connection lost. Please login again.");
+    $("#login_msg").html("Connection lost. Please login again.");
 };
 
 function blink() {
