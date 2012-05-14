@@ -70,6 +70,12 @@ td
         margin-left:auto;
 }
 
+.leaderboard_details{
+       font-size: 12px;
+       display: none;	  
+       margin-left: 75px;
+}
+
 #chat_input
 {
 	height:25px;

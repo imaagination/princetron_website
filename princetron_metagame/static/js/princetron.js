@@ -1,6 +1,16 @@
 // Websocket connection
 var socket;
 
+function flipDisplay(user) {
+    var leader_index = -1;
+    for (var i = 0; i < leaders.length; i++) {
+	if (user == leaders[i])
+	    leader_index = i;
+    }
+    
+    $("#leader_specs" + leader_index).toggle();
+}
+
 function register(socket) {
 socket.onmessage = function(m) {
     console.log("Message Recieved");
@@ -141,30 +151,38 @@ socket.onmessage = function(m) {
 	}
     }
     if ("endGame" in message) {
+	console.log("ENDING GAME");
 	game_state = "resting";
 	my_name = $("#username_input").val();
 	$.getJSON("u/" + my_name, function(data) {
 		$('#user_info').append(my_name + ", " + "Your record is " + data.wins + "-" + data.losses + ". Your ranking is " + data.rank + ".");
 	    });
 
-        $.getJSON("leaderboard/", function(data) {
-                for (var i = 0; i < data.users.length; i++) {
-		    $('#leaders').append("<div id=\"user" + i + "\"><a href=\"/p/" + data.users[i] + "\">" + (i+1) + ". " + data.users[i] + "</a></div>"); 
+        $.getJSON("leaderboard_detailed/", function(data) {
+		leaders = new Array();
+		console.log("Setting leaders");
+		for (var i = 0; i < data.users.length; i++) {
+		    leaders[i] = data.users[i].user;
+		    $('#leaders').append("<div id=\"leader" + i + "\"><a href=\"JavaScript:flipDisplay(&quot;" + data.users[i].user + 
+					 "&quot;);\">" + (i+1) + ". " + data.users[i].user + 
+					 "</a><div id=\"leader_specs" + i + "\" class=\"leaderboard_details\"> Record: " + data.users[i].wins + "-" + data.users[i].losses + 
+"</br> User since: " + data.users[i].joined_month + "/" + data.users[i].joined_day + "/" + data.users[i].joined_year +  "</div></div>"); 
+		
 		}
 		
 		for (var i = 0; i < data.users.length; i++) {
 		    for (var j = 0; j < players.length; j++) {
-			if (players[j].username == data.users[i]) {
+			if (players[j].username == data.users[i].user) {
 			    $('#user' + i).each(blink);
-			    }
+			}
 		    }
 		}
 	    });
 	
-
 	$('#billboard').each(blink);
 	showElement($("#leaderboard"));
 	window.clearInterval(game_timer);
+
     }
 };
 
@@ -333,7 +351,10 @@ var goal_time;
 var intervals_count = 0;
 var users;
 var user_count = 0;
+var leaders;
+var leader_stats = new Array();
 var ctx = $("#arena").get(0).getContext("2d");
+var LEADERBOARD_SIZE = 10;
 var KEY_J = 74;
 var KEY_K = 75;
 var KEY_LEFT = 37;

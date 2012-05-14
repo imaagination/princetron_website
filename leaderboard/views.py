@@ -24,6 +24,7 @@ def game(request):
 def user_data(username):
     user = get_object_or_404(User, name=username)
     data = {}
+    print user
     joined = user.joined_date
     data['user'] = user.name
     data['rank'] = user.rank
@@ -40,6 +41,19 @@ def profile(request, username):
 def user(request, username):
     data_json = json.dumps(user_data(username))
     return HttpResponse(data_json, mimetype="application/json")
+
+def leaders_detailed(request):
+    board = {}
+    users = top_users(10);
+    detailed_users = [None]*10;
+    for i in range(10):
+        print users[i]
+        detailed_users[i] = user_data(users[i]);
+        
+    board = {}
+    board['users'] = detailed_users
+    board_json = json.dumps(board)
+    return HttpResponse(board_json, mimetype="application/json")
 
 def leaders(request):
     board = {}
