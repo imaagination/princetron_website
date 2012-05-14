@@ -76,6 +76,11 @@ td
        margin-left: 75px;
 }
 
+#download
+{
+	text-align:center;
+}
+
 #chat_input
 {
 	height:25px;
