@@ -40,6 +40,11 @@ socket.onmessage = function(m) {
 	    socket.send(JSON.stringify({"acceptInvitation" : true}));
 	}
     }
+    if ("inviteRejected" in message) {
+	if (message.inviteRejected) {
+	    showElement($('#lobby'));
+	}
+    }
     if ("lobbyUpdate" in message) {
 	var user = message.lobbyUpdate.user;
 	var entered = message.lobbyUpdate.entered;
@@ -236,21 +241,25 @@ $(document).keydown(function(e) {
 	    case KEY_J: direction = true; break;
 	    case KEY_K: direction = false; break;
 	    case KEY_LEFT:
+	    case KEY_A:
 		if(current_dir == "north") direction = true;
 		else if (current_dir == "south") direction = false;
 		else return;
 		break;
-	    case KEY_RIGHT: 
+	    case KEY_RIGHT:
+	    case KEY_D: 
 		if(current_dir == "north") direction = false;
                 else if (current_dir == "south") direction = true;
                 else return;
                 break;
 	    case KEY_UP:
+	    case KEY_W:
 		if(current_dir == "east") direction = true;
                 else if (current_dir == "west") direction = false;
                 else return;
                 break;
 	    case KEY_DOWN:
+	    case KEY_S:
 		if(current_dir == "east") direction = false;
                 else if (current_dir == "west") direction = true;
                 else return;
@@ -314,10 +323,15 @@ var ctx = $("#arena").get(0).getContext("2d");
 var KEY_J = 74;
 var KEY_K = 75;
 var KEY_LEFT = 37;
+var KEY_A = 65;
+var KEY_S = 83;
+var KEY_D = 68;
+var KEY_W = 87;
 var KEY_UP = 38;
 var KEY_RIGHT = 39;
 var KEY_DOWN = 40;
 var KEY_ENTER = 13;
+
 
 function turnPlayer(player, isLeft) {
     if (isLeft) {
