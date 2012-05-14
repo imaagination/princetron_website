@@ -42,6 +42,7 @@ socket.onmessage = function(m) {
     }
     if ("inviteRejected" in message) {
 	if (message.inviteRejected) {
+	    alert("No one accepted your invitation!");
 	    showElement($('#lobby'));
 	}
     }
