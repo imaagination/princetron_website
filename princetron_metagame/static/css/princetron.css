@@ -7,7 +7,6 @@ h4 {
    font-size:150%
 }
 
-
 a:link {color:#FFFFFF;
        text-decoration:none
 }    
@@ -74,6 +73,16 @@ td
        font-size: 12px;
        display: none;	  
        margin-left: 75px;
+}
+
+.lobby_item {
+               background-color:#555555;
+               color: #000000
+}
+
+.selected {
+               background-color:#1589FF;
+               color: #FFFFFF
 }
 
 #download
@@ -166,16 +175,6 @@ td
 	    text-align:left;
 }
 
-.lobby_item {
-	       background-color:#555555;
-	       color: #000000
-}
-
-.selected {
-	       background-color:#1589FF;
-	       color: #FFFFFF
-}
-	
 #arena_container {
         width : 400px;
         height : 400px;
