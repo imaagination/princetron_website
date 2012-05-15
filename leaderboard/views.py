@@ -72,8 +72,6 @@ def add_game(request):
             
             losers_str = request.POST['losers']
             losers = losers_str.split(',')
- #           print "Here is the split string:"
-#            print losers.split(',')
 
             loser_objs = []
             data_dict['losers'] = losers
@@ -82,7 +80,7 @@ def add_game(request):
 
             winner = request.POST['winner']
             winner_obj, created = User.objects.get_or_create(name=winner)
-            if created: #Created new
+            if created:
                 winner_obj.wins = 1
                 winner_obj.losses = 0
                 winner_obj.joined_date = t
@@ -97,7 +95,7 @@ def add_game(request):
                 user, created = User.objects.get_or_create(name=loser)
                 rank = len(User.objects.all())
                 print created
-                if created: #Created New
+                if created:
                     user.rank = rank
                     user.wins = 0
                     user.losses = 1
@@ -147,7 +145,6 @@ def add_game(request):
             users.append(user)
 
         c['users'] = users
-        #c.update(csrf(request))
         return render_to_response("form.html", c)
 
             
