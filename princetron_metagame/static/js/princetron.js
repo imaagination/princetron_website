@@ -1,195 +1,198 @@
-// Websocket connection
-var socket;
+/* Princetron Game Logic, Networking, and Display */
 
-function flipDisplay(user) {
-    var leader_index = -1;
-    for (var i = 0; i < leaders.length; i++) {
-	if (leaders[i] == user)
-	    leader_index = i;
+
+/*********** Message handling functions ***********/
+function lobby(message) {
+    showElement($("#lobby"));
+    users = new Array();
+
+    for (var i = 0; i < message.lobby.users.length; i++) {
+	var username = message.lobby.users[i];
+	users[username] = i;
+	if (username == $('#username_input').val())
+	    $("#lobby_menu").append("<div class=\"lobby_item\" id=\"me\">" + username + "</div>");
+	else
+	    $("#lobby_menu").append("<div class=\"lobby_item\" id=\"player" + i + "\">" + username + "</div>");
+    }
+    user_count += message.lobby.users.length;
+}
+
+function loginResult(message) {
+    if (message.loginResult.result == "duplicate") {
+	$("#login_msg").html("Username Currently Taken.</br>Try Another!");
+    }
+    else if (message.loginResult.result == "invalid") {
+	$("#login_msg").html("Invalid username.</br>Use only numbers, letters, dots, and underscores.");
+    }
+}
+
+function chatHear(message) {
+    $("#chat_room").append("<div>" + message.chatHear.user + ": " + message.chatHear.message + "</div>");
+    $("#chat_room").scrollTop($("#chat_room")[0].scrollHeight);
+}
+
+function invitation(message) {
+    //ignore if inviation comes during game                                                                                                                                     
+    if (players && players[my_id].active)
+	return;
+
+    if (confirm("Would you like to play with " + message.invitation.user + "?")) {
+	socket.send(JSON.stringify({"acceptInvitation" : true}));
+    }
+}
+
+function invitationRejected(message) {
+    alert("No one accepted your invitation!");
+    showElement($('#lobby'));
+}
+
+function lobbyUpdate(message) {
+    var user = message.lobbyUpdate.user;
+    var entered = message.lobbyUpdate.entered;
+    if (entered) {
+	users[user] = user_count;
+	$("#lobby_menu").append("<div class=\"lobby_item\" id=\"player" + user_count + "\">" + user + "</div>");
+	user_count++;
+    }
+    else {
+	var user_id = users[user];
+	$(".lobby_item#player" + user_id).remove();
+    }
+}
+
+function enterArena(message) {
+    if (blinker) {
+	for (var i = 0; i < intervals_count; i++) {
+	    clearInterval(blinker[i]);
+	}
     }
 
-    $("#leader_specs" + leader_index).toggle();
+    var player_specs = message.enterArena.players;
+    players = new Array(player_specs.length);
+    player_turns = new Array(player_specs.length);
+    for (var i = 0; i < player_specs.length; i++) {
+	players[i] = { username : player_specs[i].user,
+		       x : player_specs[i].xStart,
+		       y : player_specs[i].yStart,
+		       dir : player_specs[i].dirStart,
+		       active : true,
+		       pos_legal : true };
+	player_turns[i] = new Array();
+    }
+    my_id = message.enterArena.playerId;
+    $("#game").addClass("highlighted");
+    $("#game").css("border-color", COLORS[my_id]);
+}
+
+function startGame(message) {
+    showElement($("#game"));
+    game_state = "playing";
+    $('#billboard').html("");
+    $('#user_info').html("");
+    $('#leaders').html("");
+    timestep = 0;
+    initBoard();
+    drawBoard();
+
+    goal_time = new Date().getTime() + TIMING_INTERVAL;
+    game_timer = window.setInterval(function(i) {
+	    current_time_millis = new Date().getTime();
+	    var difference = current_time_millis - goal_time;
+
+	    while(difference >= 0) {
+		advance();
+		goal_time += TIMING_INTERVAL;
+		difference -= TIMING_INTERVAL;
+	    }
+	}, REFRESH_INTERVAL);
+}
+
+function opponentTurn(message) {
+    currentTime = timestep;
+    
+    for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
+	stepBack(currentTime - i);
+    }
+    
+    player_turns[message.opponentTurn.playerId][message.opponentTurn.timestamp] = message.opponentTurn.isLeft;
+    players[message.opponentTurn.playerId].pos_legal = true;
+    
+    for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
+	stepForward(message.opponentTurn.timestamp + i);
+    }
+    
+    drawBoard();
+}
+
+function gameResult(message) {
+    if (message.gameResult.result == "loss") {
+	$('#billboard').append("<p>Player " + players[message.gameResult.playerId].username + " loses</p>");
+	players[message.gameResult.playerId].active = false;
+    }
+    if (message.gameResult.result == "win") {
+	$('#billboard').append("<p>Player " + players[message.gameResult.playerId].username + " wins</p>");
+	players[message.gameResult.playerId].active = false;
+
+    }
+}
+
+function endGame(message) {
+    console.log("ENDING GAME");
+    game_state = "resting";
+    my_name = $("#username_input").val();
+    $.getJSON("u/" + my_name, function(data) {
+	    $('#user_info').append(my_name + ", " + "Your record is " + data.wins + "-" + data.losses + ". Your ranking is " + data.rank + ".");
+	});
+
+    $.getJSON("leaderboard_detailed/", function(data) {
+	    leaders = new Array();
+	    console.log("Setting leaders");
+	    for (var i = 0; i < data.users.length; i++) {
+		leaders[i] = data.users[i].user;
+		$('#leaders').append("<div id=\"leader" + i + "\"><a href=\"JavaScript:flipDisplay(&quot;" + data.users[i].user +
+				     "&quot;);\">" + (i+1) + ". " + data.users[i].user +
+                                         "</a></div><div id=\"leader_specs" + i + "\" class=\"leaderboard_details\"> Record: " + data.users[i].wins + "-" + data.users[i].losses +
+				     "</br> User since: " + data.users[i].joined_month + "/" + data.users[i].joined_day + "/" + data.users[i].joined_year +  "</div></div>");
+
+	    }
+
+	    for (var i = 0; i < data.users.length; i++) {
+		for (var j = 0; j < players.length; j++) {
+		    if (players[j].username == data.users[i].user) {
+			$('#leader' + i).each(blink);
+		    }
+		}
+	    }
+	});
+
+    $('#billboard').each(blink);
+    showElement($("#leaderboard"));
+    window.clearInterval(game_timer);
 }
 
 function register(socket) {
-socket.onmessage = function(m) {
-    console.log("Message Recieved");
-    var message = JSON.parse(m.data);
-    if ("lobby" in message) {
-	showElement($("#lobby"));
-	users = new Array();
-	
-	for (var i = 0; i < message.lobby.users.length; i++) {
-	    var username = message.lobby.users[i];
-	    users[username] = i;
-	    if (username == $('#username_input').val())
-		$("#lobby_menu").append("<div class=\"lobby_item\" id=\"me\">" + username + "</div>");
-	    else
-		$("#lobby_menu").append("<div class=\"lobby_item\" id=\"player" + i + "\">" + username + "</div>");
-	}
-	user_count += message.lobby.users.length;
-    }
-    
-    if ("loginResult" in message) {
-	if (message.loginResult.result == "duplicate") {
-	    $("#login_msg").html("Username Currently Taken.</br>Try Another!");
-	}
-	else if (message.loginResult.result == "invalid") {
-            $("#login_msg").html("Invalid username.</br>Use only numbers, letters, dots, and underscores.");
-        }
-    }
-    if ("chatHear" in message) {
-	$("#chat_room").append("<div>" + message.chatHear.user + ": " + message.chatHear.message + "</div>");
-	$("#chat_room").scrollTop($("#chat_room")[0].scrollHeight);
-    }
-    if ("invitation" in message) {
-	//ignore if inviation comes during game
-	if (players && players[my_id].active)
-	    return;
+    socket.onmessage = function(m) {
+	console.log("Message Recieved");
+	var message = JSON.parse(m.data);
 
-	if (confirm("Would you like to play with " + message.invitation.user + "?")) {
-	    socket.send(JSON.stringify({"acceptInvitation" : true}));
-	}
-    }
-    if ("inviteRejected" in message) {
-	if (message.inviteRejected) {
-	    alert("No one accepted your invitation!");
-	    showElement($('#lobby'));
-	}
-    }
-    if ("lobbyUpdate" in message) {
-	var user = message.lobbyUpdate.user;
-	var entered = message.lobbyUpdate.entered;
-	if (entered) {
-	    users[user] = user_count;
-	    $("#lobby_menu").append("<div class=\"lobby_item\" id=\"player" + user_count + "\">" + user + "</div>");
-	    user_count++;
-	}
-	else {
-	    var user_id = users[user];
-	    $(".lobby_item#player" + user_id).remove();
-	}
-    }
-    if ("enterArena" in message) {
-	if (blinker) {
-	    for (var i = 0; i < intervals_count; i++) {
-		clearInterval(blinker[i]);
-	    }
-	}
+	if ("lobby" in message) lobby(message);
+	if ("loginResult" in message) loginResult(message);
+	if ("chatHear" in message) chatHear(message);
+	if ("invitation" in message) invitation(message);
+	if ("inviteRejected" in message) inviteRejected(message);
+	if ("lobbyUpdate" in message) lobbyUpdate(message);
+	if ("enterArena" in message) enterArena(message);
+	if ("startGame" in message) startGame(message);
+	if ("opponentTurn" in message) opponentTurn(message);
+	if ("gameResult" in message) gameResult(message);
+	if ("endGame" in message) endGame(message);
+    };
 
-	var player_specs = message.enterArena.players;
-	players = new Array(player_specs.length);
-	player_turns = new Array(player_specs.length);
-	for (var i = 0; i < player_specs.length; i++) {
-	    players[i] = { username : player_specs[i].user,
-		           x : player_specs[i].xStart, 
-			   y : player_specs[i].yStart,
-			   dir : player_specs[i].dirStart,
-			   active : true, 
-	                   pos_legal : true };
-	    player_turns[i] = new Array();
-	}
-	my_id = message.enterArena.playerId;
-	$("#game").addClass("highlighted");
-	$("#game").css("border-color", COLORS[my_id]);
-    }
-    if ("startGame" in message) {
-	showElement($("#game"));
-	game_state = "playing";
-	$('#billboard').html("");
-	$('#user_info').html("");
-	$('#leaders').html("");
-	timestep = 0;
-	initBoard();
-	drawBoard();
-	
-	var TIMING_INTERVAL = 100;
-	var REFRESH_INTERVAL = 10;
-	
-	goal_time = new Date().getTime() + TIMING_INTERVAL; 
-	game_timer = window.setInterval(function(i) {
-		current_time_millis = new Date().getTime();
-		var difference = current_time_millis - goal_time;
-		
-		while(difference >= 0) {
-		    advance();
-		    goal_time += TIMING_INTERVAL;
-		    difference -= TIMING_INTERVAL;
-		}
-	    }, REFRESH_INTERVAL);
-    }
-    if ("opponentTurn" in message) {
-	currentTime = timestep;
-	
-	for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
-	    stepBack(currentTime - i);
-	}
-	
-	player_turns[message.opponentTurn.playerId][message.opponentTurn.timestamp] = message.opponentTurn.isLeft;
-	players[message.opponentTurn.playerId].pos_legal = true;
-	
-	for (var i = 0; i < currentTime + 1 - message.opponentTurn.timestamp; i++) {
-	    stepForward(message.opponentTurn.timestamp + i);
-	}
-	
-	drawBoard();
-    }
-
-    if ("opponentCollision" in message) {
-	players[message.opponentCollision.playerId].active = false;
-    }
-
-    if ("gameResult" in message) {
-	if (message.gameResult.result == "loss") {
-	    $('#billboard').append("<p>Player " + players[message.gameResult.playerId].username + " loses</p>");
-	    players[message.gameResult.playerId].active = false;	
-	}
-	if (message.gameResult.result == "win") {
-	    $('#billboard').append("<p>Player " + players[message.gameResult.playerId].username + " wins</p>");
-	    players[message.gameResult.playerId].active = false;	
-	    
-	}
-    }
-    if ("endGame" in message) {
-	console.log("ENDING GAME");
-	game_state = "resting";
-	my_name = $("#username_input").val();
-	$.getJSON("u/" + my_name, function(data) {
-		$('#user_info').append(my_name + ", " + "Your record is " + data.wins + "-" + data.losses + ". Your ranking is " + data.rank + ".");
-	    });
-
-        $.getJSON("leaderboard_detailed/", function(data) {
-		leaders = new Array();
-		console.log("Setting leaders");
-		for (var i = 0; i < data.users.length; i++) {
-		    leaders[i] = data.users[i].user;
-		    $('#leaders').append("<div id=\"leader" + i + "\"><a href=\"JavaScript:flipDisplay(&quot;" + data.users[i].user + 
-					 "&quot;);\">" + (i+1) + ". " + data.users[i].user + 
-					 "</a></div><div id=\"leader_specs" + i + "\" class=\"leaderboard_details\"> Record: " + data.users[i].wins + "-" + data.users[i].losses + 
-"</br> User since: " + data.users[i].joined_month + "/" + data.users[i].joined_day + "/" + data.users[i].joined_year +  "</div></div>"); 
-		
-		}
-		
-		for (var i = 0; i < data.users.length; i++) {
-		    for (var j = 0; j < players.length; j++) {
-			if (players[j].username == data.users[i].user) {
-			    $('#leader' + i).each(blink);
-			}
-		    }
-		}
-	    });
-	
-	$('#billboard').each(blink);
-	showElement($("#leaderboard"));
-	window.clearInterval(game_timer);    
-    }
-};
-
-socket.onclose = function (evt) {
-    showElement($("#login"));
-    $("#lobby_menu").html("");
-    $("#login_msg").html("Connection lost. Please login again.");
-};
+    socket.onclose = function (evt) {
+	showElement($("#login"));
+	$("#lobby_menu").html("");
+	$("#login_msg").html("Connection lost. Please login again.");
+    };
 }
 
 function blink() {
@@ -204,8 +207,17 @@ function blink() {
 	, 500);
 }
 
-// UI handlers
+
+/******* UI Handling and Button Pressing **********/
 $("#login_button").click(login);
+$("#invite_button").click(invitePress);
+$("div.lobby_item").live("click", selectUser);
+$(document).keydown(keyPressed);
+
+function login() {
+    socket = new WebSocket('ws://ec2-107-22-122-48.compute-1.amazonaws.com:8080');
+    socket.onopen = initSocket;
+}
 
 function initSocket() {
     register(socket);
@@ -213,28 +225,23 @@ function initSocket() {
     socket.send(JSON.stringify(msg));
 }
 
-function login() {
-    socket = new WebSocket('ws://ec2-107-22-122-48.compute-1.amazonaws.com:8080');
-    socket.onopen = initSocket;
+function invitePress() {
+    var msg = { "readyToPlay" : { "invitations" : []}};
+    var count = 0;
+
+    $("div.lobby_item.selected").each(function(i, e) {
+	    if ($(e).text() != $('#username_input').val()) {
+		msg.readyToPlay.invitations.push($(e).text());
+		count++;
+	    }
+	});
+
+    if (count == 0)
+	return;
+
+    socket.send(JSON.stringify(msg));
+    showElement($("#wait"));
 }
-
-$("#invite_button").click(function() {
-	var msg = { "readyToPlay" : { "invitations" : []}};
-	var count = 0;
-	
-	$("div.lobby_item.selected").each(function(i, e) { 
-		if ($(e).text() != $('#username_input').val()) {
-		    msg.readyToPlay.invitations.push($(e).text());
-		    count++;
-		}
-	    });
-	
-	if (count == 0)
-	    return;
-
-	socket.send(JSON.stringify(msg));	
-	showElement($("#wait"));
-    });
 
 function chatSpeak() {
     var msg = { "chatSpeak" : {"message" : $("#chat_input").val()}};
@@ -242,29 +249,38 @@ function chatSpeak() {
     $("#chat_input").val("");
 }
 
-$("div.lobby_item").live("click", function() {
-	if($(this).hasClass("selected"))
-	    $(this).removeClass("selected");
-	else
-	    $(this).addClass("selected");			
-    });
+function selectUser() {
+    if($(this).hasClass("selected"))
+	$(this).removeClass("selected");
+    else
+	$(this).addClass("selected");
+}
 
-$(document).keydown(function(e) {
-	if (e.which == KEY_ENTER)
-	    {
-		if ($("#username_input").is(":focus")) {
-			login();
-		    }    
-		else if ($("#chat_input").is(":focus")) {
-		    chatSpeak();
-		}
-		return;
+function flipDisplay(user) {
+    var leader_index = -1;
+    for (var i = 0; i < leaders.length; i++) {
+        if (leaders[i] == user)
+            leader_index = i;
+    }
+
+    $("#leader_specs" + leader_index).toggle();
+}
+
+function keyPressed(e) {
+    if (e.which == KEY_ENTER) {
+	    if ($("#username_input").is(":focus")) {
+		login();
+	    }    
+	    else if ($("#chat_input").is(":focus")) {
+		chatSpeak();
 	    }
-
-	if (game_state == "playing") {
-	    var direction;
-
-	    var current_dir = players[my_id].dir;
+	    return;
+	}
+    
+    if (game_state == "playing") {
+	var direction;
+	
+	var current_dir = players[my_id].dir;
 	    /*Determine Direction of turn*/
 	    switch(e.which) {
 	    case KEY_J: direction = true; break;
@@ -299,30 +315,25 @@ $(document).keydown(function(e) {
 	    var turn_time = timestep;
 	    
 	    
-	    while (turn_time in player_turns[my_id])
-		{
+	    while (turn_time in player_turns[my_id]) {
 		    turn_time++;
 		}
 	    
-	    if (turn_time == timestep)
+	    if (turn_time == timestep) {
 		turnPlayer(players[my_id], direction);
+	    }
 	    
-	    player_turns[my_id][turn_time] = direction;
-	    
+	    player_turns[my_id][turn_time] = direction;	    
 	    socket.send(JSON.stringify({ "turn" : {
 			    "timestamp" : turn_time,
 				"isLeft" : direction } }));
 	}
-	
-	
-    });
+}
 
 
 function showElement(element) {
-    if (element == $("#login"))
-	$("#chat_box").show();
-    else
-	$("#chat_box").show();
+    if (element == $("#login")) $("#chat_box").hide();
+    else $("#chat_box").show();
     
     $("#login").hide();
     $("#lobby").hide();
@@ -333,7 +344,8 @@ function showElement(element) {
     element.show();
 }
 
-// Game logic
+/********** Global Variables and Game Logic **********/
+var socket;
 var game_board;
 var board_underneath;
 var blinker = new Array();
@@ -355,6 +367,10 @@ var user_count = 0;
 var leaders;
 var leader_stats = new Array();
 var ctx = $("#arena").get(0).getContext("2d");
+
+/* Constants */
+var TIMING_INTERVAL = 100;
+var REFRESH_INTERVAL = 10;
 var LEADERBOARD_SIZE = 10;
 var KEY_J = 74;
 var KEY_K = 75;
